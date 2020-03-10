@@ -1,5 +1,5 @@
 /**********************************************************************
-  Author: Alexander Bajic
+  Authors: Alexander Bajic and Georg T. Becker
   E-Mail: bajic@me.com
 
   Description:
