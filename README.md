@@ -1,11 +1,18 @@
 # dPHI
-Implementation of cryptographic operations of the dPHI protocol to measure performance.
+This repository is related to the paper __dPHI: An improved high-speed network-layer anonymity protocol__ published at PETS 2020.
+It serves the purpose of enabling others to reproduce our finding with regard to:
 
-This repository serves the purpose of enabling others to reproduce the performance measuring we conducted for the cryptographic operations of our anonymous routing protocol `dPHI`.
+1. performance measuring of the cryptographic operations of our anonymous routing protocol 
+2. computation of performance indicators such as anonymity set size, reliability of session establishment etc. of the protocol (see paper for all related measures)
 
-The code in this repository is not self-contained but requires other libraries to work. In the following we will provide an outline on how to setup an environment in which our code may be compiled and the resulting binary executed.
+While instructions on how to get the C-implementation up and running _(i.)_ are presented in the following, the Matlab scripts for analysis _(ii.)_, including a dedicated readme-file on how to use them, can be found in the subfolder _analysis_. 
 
-___Note:___ When using this code or parts of it, please cite our related paper __dPHI: An improved high-speed network-layer anonymity protocol__ from PETS 2020.
+___Note:___ When using this code or parts of it, please cite our related publication!
+
+
+The code for performance measuring of cryptographic operations is not self-contained but requires other libraries to work. In the following we will provide an outline on how to setup an environment in which our code may be compiled and the resulting binary executed.
+
+
 
 ## Prerequisites
 The following instructions assume that you run a fresh installation of Ubuntu 18.04 Desktop (either native or virtualized) and have these packages installed:
