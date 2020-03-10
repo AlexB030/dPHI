@@ -5,6 +5,8 @@ This repository serves the purpose of enabling others to reproduce the performan
 
 The code in this repository is not self-contained but requires other libraries to work. In the following we will provide an outline on how to setup an environment in which our code may be compiled and the resulting binary executed.
 
+___Note:___ When using this code or parts of it, please cite our related paper __dPHI: An improved high-speed network-layer anonymity protocol__ from PETS 2020.
+
 ## Prerequisites
 The following instructions assume that you run a fresh installation of Ubuntu 18.04 Desktop (either native or virtualized) and have these packages installed:
 
