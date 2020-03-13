@@ -3,7 +3,7 @@ This repository is related to the paper __dPHI: An improved high-speed network-l
 It serves the purpose of enabling others to reproduce our finding with regard to:
 
 1. performance measuring of the cryptographic operations of our anonymous routing protocol 
-2. computation of performance indicators such as anonymity set size, reliability of session establishment etc. of the protocol (see paper for all related measures)
+2. the Matlab code and data for the quantitative anonymity analysis of dPHI, LAP and HORNET (see paper for all related measures)
 
 While instructions on how to get the C-implementation up and running _(i.)_ are presented in the following, the Matlab scripts for analysis _(ii.)_, including a dedicated readme-file on how to use them, can be found in the subfolder _analysis_. 
 
