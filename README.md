@@ -73,7 +73,7 @@ Now you can run our sample by calling:
 ```
 /home/demo/isa-l_crypto/aes/dphi
 ```
-The only outpu that will be produced when calling this, is a line like:
+The only output that will be produced when calling this, is a line like:
 ```
 AVG of middle quarter: 463
 ```
