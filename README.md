@@ -1,6 +1,6 @@
 # dPHI
 This repository is related to the paper __dPHI: An improved high-speed network-layer anonymity protocol__ published at PETS 2020.
-It serves the purpose of enabling others to reproduce our finding with regard to:
+It serves the purpose of enabling others to reproduce our findings with regard to:
 
 1. performance measuring of the cryptographic operations of our anonymous routing protocol 
 2. the Matlab code and data for the quantitative anonymity analysis of dPHI, LAP and HORNET (see paper for all related measures)
@@ -51,7 +51,7 @@ Now we compile and copy the library to the location where our build script expec
 cd /home/demo/curve25519-donna
 make curve25519-donna-c64.o
 mkdir /home/demo/isa-l_crypto/curve25519
-cp /home/demo/curve25519-donna.curve25519-donna-c64.o /home/demo/isa-l_crypto/curve25519/
+cp /home/demo/curve25519-donna/curve25519-donna-c64.o /home/demo/isa-l_crypto/curve25519/
 ```
 ## Compiling our sample
 
@@ -59,7 +59,7 @@ Compiling is done with help of the provided shell script `dphi.sh`. Copy this to
 ```
 cp dphi.sh home/demo/isa-l_crypto/
 cp dphi.c home/demo/isa-l_crypto/aes/
-chmod /home/demo/isa-l_crypto/dphi.sh +x
+chmod +x /home/demo/isa-l_crypto/dphi.sh
 ```
 
 As soon as this is done, compile our sample code with:
