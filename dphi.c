@@ -299,7 +299,7 @@ void iAmS(struct Node *node, struct Node *helperNode, struct Node *destNode,stru
   //ks-M <- ECDH(pubM,privS)
   establishSessionKey(node,helperNode);
 
-  //H.sid <- Hash(prubS)
+  //H.sid <- Hash(pubS)
   uint8_t digest[32];
   getHash(node->pubKey,digest,32);
   memcpy(header->sid,digest,16);
