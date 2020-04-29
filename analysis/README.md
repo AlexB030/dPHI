@@ -50,135 +50,19 @@ This is historically grown research code, and I do apologize for some sub-optima
 
 Main Scripts:
 =============
-
-<table width="693" cellpadding="7" cellspacing="0" style="page-break-before: always">
-	<col width="349"/>
-
-	<col width="314"/>
-
-	<tr valign="top">
-		<td width="349" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			plotSenderAnonymity.m</p>
-		</td>
-		<td width="314" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			Script to plot sender anonymity figures (5 a-d and other not in
-			the PETs paper)</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="349" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			plotReceiverAnonymity.m</p>
-		</td>
-		<td width="314" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			Script to plot receiver anonymity figures (5 f)</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="349" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			computeshortestAllAnonymitySourceWtoD.m</p>
-		</td>
-		<td width="314" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western" style="margin-bottom: 0cm">
-			Computes the sender anonymity set size for PHIand dPHI for an
-			attacker between W and D. One can choose between IP or no IP.</p>
-			<p lang="en-US" class="western" style="margin-bottom: 0cm">Outputs:
-			sourceAnonymityWtoDforstored1000IP.mat</p>
-			<p lang="en-US" class="western">Or
-			sourceAnonymityWtoDforstored1000NoIP.mat</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="349" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			sourceAnonymityStoMforstored1000IP</p>
-		</td>
-		<td width="314" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western" style="margin-bottom: 0cm">
-			Computes the sender anonymity set size for an attacker located
-			between s and M for the PHI and dPHI protocol.</p>
-			<p lang="en-US" class="western" style="margin-bottom: 0cm">Outputs</p>
-			<p lang="en-US" class="western" style="margin-bottom: 0cm">sourceAnonymityStoMforstored1000IP.mat</p>
-			<p lang="en-US" class="western" style="margin-bottom: 0cm">Or
-			sourceAnonymityStoMforstored1000NoIP.mat</p>
-			<p lang="en-US" class="western"><br/>
-
-			</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="349" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			computeShortestAllAnonymityHORNET</p>
-		</td>
-		<td width="314" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			Computes the source anonymity for HORNET. Outputs
-			sourceAnonymityHornet1000IP.mat or
-			sourceAnonymityHornet1000NoIP.mat</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="349" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			computeSenderAnonymityLAP</p>
-		</td>
-		<td width="314" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western" style="margin-bottom: 0cm">
-			Computes source anonymity for LAP (with and without VSS)</p>
-			<p lang="en-US" class="western">Outputs
-			sourceAnonymityVSSwithM3forstored1000IP.mat and
-			sourceAnonymityVSSwithM3forstored1000NoIP.mat</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="349" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			computeShortestAllNoBGBSenderAnonymityStoM</p>
-		</td>
-		<td width="314" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			 Computes sender anonymity for PHI and dPHI for S to M with a
-			shortest path routing algorithm but no valley freeness</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="349" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			computeshortestAllAnonymitySourceStoMNoShortestPath</p>
-		</td>
-		<td width="314" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			Computes sender anonymity for PHI and dPHI for S to M without a
-			shortest path routing policy</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="349" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			computeShortestAllValleyfreeDestinationAnonymity</p>
-		</td>
-		<td width="314" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			Compute receiver anonymity for PHI and dPHI</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="349" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			computeShortestAllAnonymityDestinationHORNET</p>
-		</td>
-		<td width="314" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			Compute receiver anonymity for HORNET</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="349" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			computeSourceAndDestination</p>
-		</td>
-		<td width="314" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			Computes an upper bound on the sender-receiver anonymity set size
-			based on the results from sender anonymity and receiver anonymity</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="349" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			<br/>
-
-			</p>
-		</td>
-		<td width="314" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			<br/>
-
-			</p>
-		</td>
-	</tr>
-</table>
+| File name | Description |
+|------------------------------------|---------------------------------------------|
+| plotSenderAnonymity.m | Script to plot sender anonymity figures (5 a-d and other not in the PETs paper) |
+| plotReceiverAnonymity.m | Script to plot receiver anonymity figures (5 f) |
+| computeshortestAllAnonymitySourceWtoD.m | Computes the sender anonymity set size for PHIand dPHI for an attacker between W and D. One can choose between IP or no IP. Outputs: sourceAnonymityWtoDforstored1000IP.mat Or sourceAnonymityWtoDforstored1000NoIP.mat |
+| sourceAnonymityStoMforstored1000IP | Computes the sender anonymity set size for an attacker located between s and M for the PHI and dPHI protocol. Outputs sourceAnonymityStoMforstored1000IP.mat Or 	sourceAnonymityStoMforstored1000NoIP.mat |
+| computeShortestAllAnonymityHORNET | Computes the source anonymity for HORNET. Outputs sourceAnonymityHornet1000IP.mat or sourceAnonymityHornet1000NoIP.mat |
+| computeSenderAnonymityLAP | Computes source anonymity for LAP (with and without VSS) Outputs sourceAnonymityVSSwithM3forstored1000IP.mat and sourceAnonymityVSSwithM3forstored1000NoIP.mat |
+| computeShortestAllNoBGBSenderAnonymityStoM | Computes sender anonymity for PHI and dPHI for S to M with a shortest path routing algorithm but no valley freeness |
+| computeshortestAllAnonymitySourceStoMNoShortestPath | Computes sender anonymity for PHI and dPHI for S to M without a shortest path routing policy |
+| computeShortestAllValleyfreeDestinationAnonymity | Compute receiver anonymity for PHI and dPHI |
+| computeShortestAllAnonymityDestinationHORNET | Compute receiver anonymity for HORNET |
+| computeSourceAndDestination | Computes an upper bound on the sender-receiver anonymity set size based on the results from sender anonymity and receiver anonymity |
 
 
 Helper Functions:
@@ -186,189 +70,31 @@ Helper Functions:
 
 The following Matlabscripts implement Functions used during the computation. In particular these include some functions to compute shortest paths and to generate a PHI path.
 
-<table width="641" cellpadding="7" cellspacing="0">
-	<col width="319"/>
-
-	<col width="292"/>
-
-	<tr valign="top">
-		<td width="319" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			generateShortestValleyfreePHITrace.m</p>
-		</td>
-		<td width="292" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			Generates a PHI trace from source to destination via the helper
-			node using a shortest path valley free routing algorithm</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="319" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			shortestAllBGPtreeCtoPonlyDestination.m</p>
-		</td>
-		<td width="292" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western" style="margin-bottom: 0cm">
-			This function is identical to shortestAllBGPtreeonlyDestination,
-			the only difference</p>
-			<p lang="en-US" class="western" style="margin-bottom: 0cm">is that
-			only c to p links are valid. This is useful if an attacker</p>
-			<p lang="en-US" class="western">observes a c-to-p link  or P-to-p
-			link and hence knows that all previousnodes can only be c-to-p</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="319" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western" style="margin-bottom: 0cm">
-			<font color="#000000"><font face="Courier New, serif"><font size="2" style="font-size: 10pt">shortestBGPtreeDestination</font></font></font></p>
-			<p lang="en-US" class="western"><br/>
-
-			</p>
-		</td>
-		<td width="292" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western" style="margin-bottom: 0cm">
-			% This function is identical to shortestBGPtreeSource, the only
-			difference</p>
-			<p lang="en-US" class="western">% is nodes in a path are not
-			appended at the end but inserted in the front.</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="319" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western" style="margin-bottom: 0cm">
-			<font color="#000000"><font face="Courier New, serif"><font size="2" style="font-size: 10pt">shortestAllBGPtreeDestinationIgnoreNodes</font></font></font></p>
-			<p lang="en-US" class="western"><br/>
-
-			</p>
-		</td>
-		<td width="292" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			Same function as shortestAllBGPtreeDestination but in addition it
-			has a list of nodes that are not traversed.</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="319" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			shortestAllBGPtreeDestination</p>
-		</td>
-		<td width="292" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western" style="margin-bottom: 0cm">
-			computes all shortest path from</p>
-			<p lang="en-US" class="western" style="margin-bottom: 0cm">the
-			destination to the sourc. The output shortestTree contains a
-			cell-array</p>
-			<p lang="en-US" class="western">of path instead of a single path.</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="319" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			<br/>
-
-			</p>
-		</td>
-		<td width="292" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			<br/>
-
-			</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="319" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western" style="margin-bottom: 0cm">
-			<font color="#000000"><font face="Courier New, serif"><font size="2" style="font-size: 10pt">verifyValleyfree.m</font></font></font></p>
-			<p lang="en-US" class="western"><br/>
-
-			</p>
-		</td>
-		<td width="292" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			A script to check if due to the backtracking phase valley-freeness
-			is broken (unlikely)</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="319" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			<font color="#000000"><font face="Courier New, serif"><font size="2" style="font-size: 10pt">generateShortestNoBGBPHITrace</font></font></font></p>
-		</td>
-		<td width="292" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western" style="margin-bottom: 0cm">
-			Generates a PHI trace from source to destination via the helper
-			node.</p>
-			<p lang="en-US" class="western">Allways the shortest valley-free
-			path is chosen for routes between Source and helper node, choosing
-			midway node, midway node to destination.</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="319" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			<font color="#000000"><font face="Courier New, serif"><font size="2" style="font-size: 10pt">storeMindwayNodePosition</font></font></font></p>
-		</td>
-		<td width="292" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			small helper script to find position of the midway node in the PHI
-			path and store it in an array for use by the printing function.</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="319" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			<font color="#000000"><font face="Courier New, serif"><font size="2" style="font-size: 10pt">readinASGraphDirected</font></font></font></p>
-		</td>
-		<td width="292" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			Script to import CAIDA dataset. Note that you do not need to do
-			this if you use the same dataset. You need some manually editing
-			of the CAIDA files so this file is not plug and run.</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="319" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western">
-			<font color="#000000"><font face="Courier New, serif"><font size="2" style="font-size: 10pt">generateSourceDestinationList</font></font></font></p>
-		</td>
-		<td width="292" style="border: 1px solid #000000; padding: 0cm 0.19cm"><p lang="en-US" class="western" style="margin-bottom: 0cm">
-			Helper script to randomly generate 1000 (or more if you want)
-			source</p>
-			<p lang="en-US" class="western" style="margin-bottom: 0cm">%destinations
-			pairs and stores and PHI paths and stores it in a file so</p>
-			<p lang="en-US" class="western">%that you can run multiple
-			experiments using the same nodes.</p>
-		</td>
-	</tr>
-</table>
+| File name | Description |
+|-------|---------|
+| generateShortestValleyfreePHITrace.m | Generates a PHI trace from source to destination via the helper node using a shortest path valley free routing algorithm |
+| Generates a PHI trace from source to destination via the helper node using a shortest path valley free routing algorithm | This function is identical to shortestAllBGPtreeonlyDestination, the only difference is that only c to p links are valid. THis is useful if an attacker observes a c-to-p link  or P-to-p link and hence knows that all previousnodes can only be c-to-p |
+| shortestBGPtreeDestination | This function is identical to shortestBGPtreeSource, the only difference is nodes in a path are not appended at the end but inserted in the front. |
+| shortestAllBGPtreeDestinationIgnoreNodes | Same function as shortestAllBGPtreeDestination but in addition it has a list of nodes that are not traversed. |
+| Same function as shortestAllBGPtreeDestination but in addition it has a list of nodes that are not traversed. | computes all shortest path from the destination to the sourc. The output shortestTree contains a cell-array of path instead of a single path. |
+| verifyValleyfree.m | A script to check if due to the backtracking phase valley-freeness is broken (unlikely) |
+| generateShortestNoBGBPHITrace | Generates a PHI trace from source to destination via the helper node. Allways the shortest valley-free path is chosen for routes between Source and helper node, choosing midway node, midway node to destination. |
+| storeMindwayNodePosition | small helper script to find position of the midway node in the PHI path and store it in an array for use by the printing function. |
+| readinASGraphDirected | Script to import CAIDA dataset. Note that you do not need to do this if you use the same dataset. You need some manually editing of the CAIDA files so this file is not plug and run. |
+| generateSourceDestinationList | Helper script to randomly generate 1000 (or more if you want) source destination pairs and stores and PHI paths and stores it in a file so that you can run multiple experiments using the same nodes. |
 
 Pre-computed files:
 ===================
 
-<table width="641" cellpadding="7" cellspacing="0">
-	<col width="300"/>
+ File name | Description |
+|-------|---------|
+| nographFrom2014withAll.mat | This file contains the used network topology imported from the 2014 CAIDA dataset (20140901) |
+| savedSourceDestinationHelperNodes2014.mat | This file contains 1000 random generated PHI path from the 2014 topology that was used in the generation |
+| nographFrom2019withAll.mat | The same file as the 2014 data set but with 2019 data (20190701). However, this was not used in the PETs results, only internally to experiment with. But feel free to also experiment with it |
+| midwayNodePosition.mat | The midway node position in the path for the 1000 saved nodes. Generated by storeMindwayNodePosition |
 
-	<col width="311"/>
 
-	<tr valign="top">
-		<td width="300" style="border: 1px solid #000000; padding: 0cm 0.19cm"><h1 lang="en-US" class="western">
-			<font size="3" style="font-size: 12pt"><span style="font-weight: normal">nographFrom2014withAll.mat</span></font></h1>
-		</td>
-		<td width="311" style="border: 1px solid #000000; padding: 0cm 0.19cm"><h1 lang="en-US" class="western">
-			<font size="3" style="font-size: 12pt"><span style="font-weight: normal">This
-			file contains the used network topology imported from the 2014
-			CAID dataset (20140901)</span></font></h1>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="300" style="border: 1px solid #000000; padding: 0cm 0.19cm"><h1 lang="en-US" class="western">
-			<font size="3" style="font-size: 12pt"><span style="font-weight: normal">savedSourceDestinationHelperNodes2014.mat</span></font></h1>
-		</td>
-		<td width="311" style="border: 1px solid #000000; padding: 0cm 0.19cm"><h1 lang="en-US" class="western">
-			<font size="3" style="font-size: 12pt"><span style="font-weight: normal">This
-			file contains 1000 random generated PHI path from the 2014
-			topology that was used in the generation </span></font>
-			</h1>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="300" style="border: 1px solid #000000; padding: 0cm 0.19cm"><h1 lang="en-US" class="western">
-			<font size="3" style="font-size: 12pt"><span style="font-weight: normal">nographFrom2019withAll.mat</span></font></h1>
-		</td>
-		<td width="311" style="border: 1px solid #000000; padding: 0cm 0.19cm"><h1 lang="en-US" class="western">
-			<font size="3" style="font-size: 12pt"><span style="font-weight: normal">The
-			same file as the 2014 data set but with 2019 data (20190701).
-			However, this was not used in the PETs results, only internally to
-			experiment with. But feel free to also experiment with it</span></font></h1>
-		</td>
-	</tr>
-	<tr valign="top">
-		<td width="300" style="border: 1px solid #000000; padding: 0cm 0.19cm"><h1 lang="en-US" class="western">
-			<font size="3" style="font-size: 12pt"><span style="font-weight: normal">midwayNodePosition.mat</span></font></h1>
-		</td>
-		<td width="311" style="border: 1px solid #000000; padding: 0cm 0.19cm"><h1 lang="en-US" class="western">
-			<font size="3" style="font-size: 12pt"><span style="font-weight: normal">The
-			midway node position in the path for the 1000 saved nodes.
-			Generated by storeMindwayNodePosition</span></font></h1>
-		</td>
-	</tr>
-</table>
+
+
+
+
