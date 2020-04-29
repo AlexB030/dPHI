@@ -50,15 +50,6 @@ extern void sha256_ref(uint8_t * input_data, uint32_t * digest, uint32_t len);
 int cVector[NUM_OF_SIMS];
 int cVector2[NUM_OF_SIMS];
 
-int compare( const void* a, const void* b)
-{
-     int int_a = * ( (int*) a );
-     int int_b = * ( (int*) b );
-
-     if ( int_a == int_b ) return 0;
-     else if ( int_a < int_b ) return -1;
-     else return 1;
-}
 
 void cVectorAnalysis(void)
 {
@@ -68,23 +59,6 @@ void cVectorAnalysis(void)
   for(int x=start;x<start+newVSize;x++)
   {
     newVector[x-start]=cVector[x];
-  }
-  long int avg=0;
-  for(int i=0;i<newVSize;i++)
-  {
-    avg=avg+newVector[i];
-  }
-  printf("AVG of middle quarter: %ld\n",avg/newVSize);
-}
-
-void cVector2Analysis(void)
-{
-  int newVSize=NUM_OF_SIMS/4;
-  int newVector[newVSize];
-  int start=newVSize+(newVSize/2);
-  for(int x=start;x<start+newVSize;x++)
-  {
-    newVector[x-start]=cVector2[x];
   }
   long int avg=0;
   for(int i=0;i<newVSize;i++)
@@ -135,11 +109,6 @@ struct Node {
   uint8_t origDest[4];
 };
 
-uint64_t rdtsc1(void){ /*not used anymore*/
-    unsigned int lo,hi;
-    __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
-    return ((uint64_t)hi << 32) | lo;
-}
 
 void getHash(uint8_t *buffer,uint8_t *digest, int len)
 {
@@ -149,7 +118,6 @@ void getHash(uint8_t *buffer,uint8_t *digest, int len)
   memcpy(digest,digest32,len);
 
 }
-
 
 void printer(const char *txt, uint8_t * var, int len)
 {
@@ -163,26 +131,7 @@ void printer(const char *txt, uint8_t * var, int len)
   printf("\n");
 }
 
-/* not needed fpr the protocol of course, but good for tracking protocol execution */
-void nodeprint(struct Node node)
-{
-  printf("Node %d information\n\n", node.id);
-
-  printer("  address:     ", node.address, 4);
-  printer("  pubKey:      ", node.pubKey, 32);
-  printer("  privKey:     ", node.privKey, 32);
-  printer("  sessionKey:  ", node.sessionKey, 32);
-  printer("  longTermKey: ", node.longTermKey, KEY_SIZE);
-  printer("  nonce:       ", node.nonce, 8);
-  printer("  midwayIv:    ", node.midwayIv, IV_SIZE);
-  printer("  midwayIv:    ", node.midwayIv2, IV_SIZE);
-  printer("  midwayIv:    ", node.midwayIv3, IV_SIZE);
-  printer("  midwayIv:    ", node.midwayIv4, IV_SIZE);
-  printer("  midwaySeed:  ", node.midwaySeed, 16);
-  printer("  midwayAt:    ", node.midwayAt, TAG_SIZE);
-  printer("  origDest:    ", node.origDest, 4);
-}
-
+// If DEBUG==1 this function will be called
 void payloadprint(struct Payload *payload)
 {
   printf("Payload information\n\n");
@@ -192,6 +141,7 @@ void payloadprint(struct Payload *payload)
   printer("  pubKeyS:    ", payload->pubKeyS, 32);
 }
 
+// If DEBUG==1 this function will be called
 void headerprint(struct Header *header)
 {
   printf("Header information\n\n");
@@ -219,7 +169,6 @@ void headerprint(struct Header *header)
   printf("\n\n");
 }
 
-
 /* this code is taken from the Intel documentation on how to use their rdrand with help of inline assembly */
 int rdrand64_step (uint64_t *rand)
 {
@@ -231,7 +180,7 @@ int rdrand64_step (uint64_t *rand)
 	return (int) ok;
 }
 
-/* this function constructs our IV */
+/* this function constructs our IV, resorting to rdrand64_step from Intel */
 void generateIv(uint8_t * freshIv, uint64_t * c3, uint64_t * c4)
 {
   uint64_t rdTest1;
@@ -250,7 +199,7 @@ void generateIv(uint8_t * freshIv, uint64_t * c3, uint64_t * c4)
 /* Instructions on how to to use this library taken from "https://github.com/agl/curve25519-donna" and "http://cr.yp.to/ecdh.html" */
 void initPubPriv(struct Node *node)
 {
-  // there are better sources of randomness but it does not matter for this toy example
+  // there are better sources of randomness but it does not matter for this toy example since it is not part of our measurement!
   for (int u=0;u<32;u++) {
     node->privKey[u]=rand() % 255;
   }
@@ -260,15 +209,17 @@ void initPubPriv(struct Node *node)
 
   static const uint8_t basepoint[32] = {9};
 
+  // calling the function from the external library to derive the corresponding public key
   curve25519_donna(node->pubKey, node->privKey, basepoint);
 }
 
-/* another feature of the curve25519-donna lib ist derive the agreed session key */
+/* another feature of the curve25519-donna lib is to derive the agreed session key */
 void establishSessionKey(struct Node *node1, struct Node *node2)
 {
   curve25519_donna(node1->sessionKey, node1->privKey, node2->pubKey);
 }
 
+// this function initializes the various nodes with random data. the quality of randomness is not important at this point as we only want to have different values within the different nodes.
 struct Node initializeNode(struct Node node,int i)
 {
   memset(&node, 0, sizeof node);
@@ -1521,13 +1472,13 @@ int main(void)
       if(memcmp(&header,&headerStored,sizeof header)==0)
       {
         printf("\033[0;32m");
-        printf("Headerkopie ok\n");
+        printf("Header copy ok\n");
         printf("\033[0m");
       }
       else
       {
         printf("\033[0;31m");
-        printf("Headerkopie NICHT ok\n");
+        printf("Header copy NOT ok\n");
         printf("\033[0m");
       }
     }
@@ -1776,8 +1727,6 @@ int main(void)
 
   // this call performs operations to determine the average number of cycles for the operation that is enclosed in the for-loop
   cVectorAnalysis();
-  // this function evaluates data in the second vector of measuring data, if such information should have been stored
-  //cVector2Analysis();
 
   return 0;
 
