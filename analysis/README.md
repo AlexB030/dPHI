@@ -30,11 +30,13 @@ Overview of the matlab scripts and how-to
 
 We used Matlab 2017 for the computations, but it should be upwards compatible. We use several different scripts to run the various experiments. If you just want to generate pretty figures, there are two scripts for plotting the figures, plotReceiverAnonymity and plotSenderAnonymity. We included all intermediate data files so that you can plot and work directly with the results without needing to rerun all experiments.
 
-We have imported the CAIDA network relationship using some manual processing and and import script. Due to the manual edition, this is the only file that will not work just by clicking run and is "unsupported". Note that you do not need to import anything from an external CAIDA homepage if you want to use the 20014 or 2019 dataset. However, you do agree with the CAIDA copyright if you do so.
+__Remark on alternatives:__ _Included MAT-files can also be opened and inspected with Octave (tested version: 4.4.1). Additionally, most of the scripts can be run with said Octave version._
 
-Due to the many different experiments, there are a lot of different files in this repository. The three tables give an overview which file does which. The Table with main-scripts are the scripts you can directly start while the helper functions contain functions called by these main scripts. We have also included a table with the important pre-computed or imported mat files that are imported in the computations. (We have not listed all intermediate results files, but they should be self-explanatory when you look up where they are used in the printing scripts)
+We have imported the CAIDA network relationship using some manual processing and import script. Due to the manual editing, this is the only file that will not work just by clicking run and is "unsupported". Note that you do not need to import anything from an external CAIDA homepage if you want to use the 20014 or 2019 dataset. However, you do agree with the CAIDA copyright if you do so.
 
-Remarks to inconsistent naming
+Due to the many different experiments, there are a lot of different files in this repository. The three tables give an overview which file does what. The Table with main-scripts are the scripts you can directly start while the helper functions contain functions called by these main scripts. We have also included a table with the important pre-computed or imported mat files that are imported in the computations. (We have not listed all intermediate results files, but they should be self-explanatory when you look up where they are used in the printing scripts)
+
+__Remarks to inconsistent naming:__
 
 This is historically grown research code, and I do apologize for some sub-optimal naming and commenting :( But hey, at least there are some comments and we published the files. Some naming that might confuse you:
 
