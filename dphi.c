@@ -521,6 +521,7 @@ void backAtS(struct Header *header, struct Header *headerStored, struct Node *no
   memcpy(payload->iv,freshIv,IV_SIZE);
   memcpy(payload->pubKeyS,node->pubKey,32);
   memcpy(headerStored,header, sizeof *header);
+  free(freshIv);
 }
 
 void finishAtS(struct Header *header, struct Header *headerStored, struct Node *node, struct Node *destNode, struct Payload *payload, struct gcm_key_data gkey, uint8_t *freshIv, uint64_t * c1, uint64_t * c2)
@@ -680,6 +681,7 @@ struct Header sToM(struct Header header, struct Node node, struct gcm_key_data g
   b=__rdtsc();
   memcpy(c1,&a,8);
   memcpy(c2,&b,8);
+  free(rp);
   return header;
 }
 
@@ -771,6 +773,7 @@ struct Header wToD(struct Header header, struct Node node, struct gcm_key_data g
   memcpy(c1,&a,8);
   memcpy(c2,&b,8);
   //memcpy(freshIv,newIv,16);
+  free(rp);
   return header;
 }
 
@@ -1149,6 +1152,7 @@ void iAmWforwardToD(struct Header *header, struct Node *node, uint8_t *freshIv, 
   b=__rdtsc();
   memcpy(c1,&a,8);
   memcpy(c2,&b,8);
+  free(rp);
 }
 
 struct Header dToW(struct Header header, struct Node *node, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2)
@@ -1437,8 +1441,7 @@ int main(void)
     struct Header header;
     struct Header headerStored;
     struct Payload payload;
-    //printf("%ld\n",sizeof(header));
-    //header=malloc(sizeof header);
+    
     memset(&header, 0, sizeof header);
     memset(&payload, 0, sizeof payload);
 
@@ -1727,6 +1730,8 @@ int main(void)
 
   // this call performs operations to determine the average number of cycles for the operation that is enclosed in the for-loop
   cVectorAnalysis();
+  free(freshIv);
+  free(freshIv2);
 
   return 0;
 
