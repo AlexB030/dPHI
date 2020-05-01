@@ -25,9 +25,19 @@ The following instructions assume that you run a fresh installation of Ubuntu 18
 If not, install them via:
 ```
 sudo apt update
-sudo apt install build-essential nasm autoconf libtool
+sudo apt install build-essential nasm autoconf libtool git
 ```
 Of course, you are not forced to use Ubuntu or any other Linux for that matter. However, our instructions have been tested and verified to work in this setting.
+
+## Automated setup
+You may choose to have everything setup automatically, instead of downloading and compiling things yourself.
+In the repository's main directory, there is a shell-script `setup.sh`. Call this to download all needed files and perform operations needed to run our sample.
+
+```
+./setup.sh
+```
+If you took the automated setup, you may scroll down to the end of the readme file and proceed with __"Running our sample"__.
+Otherwise, if you want to do things manually, just go on with the next steps.
 
 ## Get Intel's ISA-L crypto Library
 The cryptographic operations that are performed in our sample code rely on this library for the performance advantages that result from using Intel's cryptographic coprocessor. It can be found on Github via [https://github.com/intel/isa-l_crypto/](https://github.com/intel/isa-l_crypto/). Clone it or download and unpack the ZIP archive from there. The following command line instructions assume that you unpacked or cloned the repository to `/home/demo/isa-l_crypto/`. If not, please adapt commands accordingly.
@@ -35,13 +45,14 @@ The cryptographic operations that are performed in our sample code rely on this 
 Configure and compile with the follwoing commands:
 ```
 cd /home/demo/isa-l_crypto/
+# optional: git checkout 800e7f8
 ./autogen.sh
 ./configure
 make
 make check
-sudo make install
 ```
 `make check` will compile some additional files that we will need (e.g. SHA256 reference implementation).
+___Should the above operations fail, retry after checking out the specified commit!___
 
 ## Get curve25519-donna Library
 This library is used for Diffie-Hellman key agreement and is also hosted on Github [https://github.com/agl/curve25519-donna](https://github.com/agl/curve25519-donna). Again, either clone the repository or download and unpack the ZIP archive. Either way, the following command line instructions assume you cloned or unpacked to `/home/demo/curve25519-donna/`.
@@ -49,16 +60,18 @@ This library is used for Diffie-Hellman key agreement and is also hosted on Gith
 Now we compile and copy the library to the location where our build script expects it:
 ```
 cd /home/demo/curve25519-donna
+# optional: git checkout f7837ad;
 make curve25519-donna-c64.o
 mkdir /home/demo/isa-l_crypto/curve25519
 cp /home/demo/curve25519-donna/curve25519-donna-c64.o /home/demo/isa-l_crypto/curve25519/
 ```
+___Should the above operations fail, retry after checking out the specified commit!___
 ## Compiling our sample
 
 Compiling is done with help of the provided shell script `dphi.sh`. Copy this to `/home/demo/isa-l_crypto/`, that is, if you followed our recommendation with regard to folder naming. Please make sure, that this script is executable. The file containing our sample code `dphi.c` must be copied to `/home/demo/isa-l_crypto/aes/`.
 ```
-cp dphi.sh home/demo/isa-l_crypto/
-cp dphi.c home/demo/isa-l_crypto/aes/
+cp dphi.sh /home/demo/isa-l_crypto/
+cp dphi.c /home/demo/isa-l_crypto/aes/
 chmod +x /home/demo/isa-l_crypto/dphi.sh
 ```
 
@@ -70,6 +83,7 @@ Warnings that are shown during compilation refer to unused variables. These can 
 
 ## Running our sample
 Now you can run our sample by calling:
+_(Adapt the path to fit your environment.)_
 ```
 /home/demo/isa-l_crypto/aes/dphi
 ```
