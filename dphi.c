@@ -201,7 +201,7 @@ void initPubPriv(struct Node *node)
 {
   // there are better sources of randomness but it does not matter for this toy example since it is not part of our measurement!
   for (int u=0;u<32;u++) {
-    node->privKey[u]=rand() % 255;
+    node->privKey[u]=rand() % 256;
   }
   node->privKey[0] &= 248;
   node->privKey[31] &= 127;
@@ -230,10 +230,10 @@ struct Node initializeNode(struct Node node,int i)
 
   // init longTermKey
   for (int u=0;u<KEY_SIZE;u++) {
-    node.longTermKey[u]=rand() % 255;
+    node.longTermKey[u]=rand() % 256;
   }
   for (int u=0;u<4;u++) {
-    node.address[u]=rand() % 255;
+    node.address[u]=rand() % 256;
   }
 
   return node;
@@ -244,7 +244,7 @@ void iAmS(struct Node *node, struct Node *helperNode, struct Node *destNode,stru
 {
   //nmid <- random
   for (int i=0;i<8;i++) {
-    node->nonce[i]=rand() % 255;
+    node->nonce[i]=rand() % 256;
   }
 
   //ks-M <- ECDH(pubM,privS)
@@ -291,12 +291,12 @@ void iAmS(struct Node *node, struct Node *helperNode, struct Node *destNode,stru
     for (int u=0;u<16;u++) {
 
       if(u<TXT_SIZE){
-        header->v1[i].ct[u]=rand() % 255;
+        header->v1[i].ct[u]=rand() % 256;
       }
       if(u<IV_SIZE){
-        header->v1[i].iv[u]=rand() % 255;
+        header->v1[i].iv[u]=rand() % 256;
       }
-      header->v1[i].at[u]=rand() % 255;
+      header->v1[i].at[u]=rand() % 256;
     }
   }
 
@@ -373,7 +373,7 @@ struct Header iAmWbacktracking(struct Header header, struct Node *node, struct g
   uint8_t newEgress[4];
   for(int i=0;i<4;i++)
   {
-    newEgress[i]=rand() % 255;
+    newEgress[i]=rand() % 256;
   }
   memcpy(pt2+4,newEgress,4);
 
@@ -619,14 +619,14 @@ struct Header sToM(struct Header header, struct Node node, struct gcm_key_data g
   */
 
     for (int i=0;i<4;i++) {
-      ingres[i]=rand() % 255;
-      egres[i]=rand() % 255;
+      ingres[i]=rand() % 256;
+      egres[i]=rand() % 256;
     }
 
 
     pType=0;
     posV1=header.pos;
-    posV2=rand() % 255 + VECTOR_LENGTH; /* this will generate a number that is beyond the array size, thus being nonsense */
+    posV2=rand() % 256 + VECTOR_LENGTH; /* this will generate a number that is beyond the array size, thus being nonsense */
 
     if(DEBUG == 1){
       printf("Parameters for R\n\n");
@@ -711,13 +711,13 @@ struct Header wToD(struct Header header, struct Node node, struct gcm_key_data g
   */
 
     for (int i=0;i<4;i++) {
-      ingres[i]=rand() % 255;
-      egres[i]=rand() % 255;
+      ingres[i]=rand() % 256;
+      egres[i]=rand() % 256;
     }
 
     pType=0;
     posV2=header.pos;
-    posV1=rand() % 255 + VECTOR_LENGTH; /* this will generate a number that is beyond the array size, thus being nonsense */
+    posV1=rand() % 256 + VECTOR_LENGTH; /* this will generate a number that is beyond the array size, thus being nonsense */
 
     if(DEBUG == 1){
       printf("Parameters for R\n\n");
@@ -1117,7 +1117,7 @@ void iAmWforwardToD(struct Header *header, struct Node *node, uint8_t *freshIv, 
   // Alg 6:11
   //egress must be updated
   for (int u=0;u<4;u++) {
-    egres[u]=rand() % 255;
+    egres[u]=rand() % 256;
   }
   //construction of new R (could be simplified by memcpy(originalR+4,egres,4);)
   memcpy(rp, ingres, 4 * sizeof(uint8_t));
