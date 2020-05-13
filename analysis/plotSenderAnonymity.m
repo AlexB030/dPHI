@@ -1,9 +1,3 @@
-% Authors: Georg T. Becker and Alexander Bajic
-% This code was published as part of the PETs 2020 publication 
-%"dPHI: An improved high-speed network-layer anonymity protocol"
-% The complete code, copyright and readme can be found at https://github.com/AlexB030/dPHI
-% For questions, contact georg.becker@ ruhr-uni-bochum.de
-
 %% Plotting sender anonymity figures.
 
 clear all
@@ -75,9 +69,9 @@ end
 
 % we also have computed s to m source anonymity without using
 % valley-freeness
-%load('sourceAnonymityStoMNoBGBforRandom1000IP.mat','anonymitySetsizePHIAll','anonymitySetsizeDPHIAll')
-%senderAnonymityNoBgpPHIStoM=anonymitySetsizePHIAll;
-%senderAnonymityNoBgpDPHIStoM=anonymitySetsizeDPHIAll;
+load('sourceAnonymityStoMNoBGBforRandom1000IP.mat','anonymitySetsizePHIAll','anonymitySetsizeDPHIAll')
+senderAnonymityNoBgpPHIStoM=anonymitySetsizePHIAll;
+senderAnonymityNoBgpDPHIStoM=anonymitySetsizeDPHIAll;
 
 
 % we also have computed s to m source anonymity without using

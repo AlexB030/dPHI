@@ -1,12 +1,5 @@
-% Authors: Georg T. Becker and Alexander Bajic
-% This code was published as part of the PETs 2020 publication 
-%"dPHI: An improved high-speed network-layer anonymity protocol"
-% The complete code, copyright and readme can be found at https://github.com/AlexB030/dPHI
-% For questions, contact georg.becker@ ruhr-uni-bochum.de
-
-
 % Compute anonymity set size for LAP. 
-%
+
 % The sufix "noLength" indicates that the computation does not require shortest path routing. (Result not part of the PETs paper) 
 % The sufix "Single" indicates that only one path is valid for a given source destination part (Result not part of the PETs paper) 
 
@@ -216,8 +209,6 @@ for(currExperiment=1:numOfExperiments)
  end
 toc
 
-%anonymitySetsizeVSSM3=anonymitySetsizeVSS;
-%anonymitySetsizeVSSSingleM3=anonymitySetsizeVSSSingle;
 
 if(chosenM==2)
     if(useIPrange==1)
@@ -227,6 +218,8 @@ if(chosenM==2)
     end
 end
 if(chosenM==3)
+    anonymitySetsizeVSSM3=anonymitySetsizeVSS;
+    anonymitySetsizeVSSSingleM3=anonymitySetsizeVSSSingle;
     if(useIPrange==1)
         save('sourceAnonymityVSSwithM3forstored1000IP.mat','chosenM','anonymitySetsizeLAP','anonymitySetsizeLAPNoLength','anonymitySetsizeLAPSingle','anonymitySetsizeLAPNoLengthSingle','anonymitySetsizeVSSM3','anonymitySetsizeVSSSingleM3')
     else

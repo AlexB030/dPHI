@@ -1,34 +1,32 @@
-% Authors: Georg T. Becker and Alexander Bajic
-% This code was published as part of the PETs 2020 publication 
-%"dPHI: An improved high-speed network-layer anonymity protocol"
-% The complete code, copyright and readme can be found at https://github.com/AlexB030/dPHI
-% For questions, contact georg.becker@ ruhr-uni-bochum.de
-
 %script to read in the topology information. Download the caida datasets
 %at: https://www.caida.org/data/as-relationships/    
 % and https://www.caida.org/data/routing/routeviews-prefix2as.xml 
 % We have MANUALLY altered the as-rel.txt by removing the preceeeding lines
-% (therefore renamed it _G_noHeader.txt) so that the first line does not
+% (therefore renamed it :Modified.txt) so that the first line does not
 % contain comments but content.
-
+%
+%
 %We have also modified the .pfx2as files MANUALLY by first importing it
-%into Excel and turing it into a csv file with semicolons as delimitor with
+%into Excel and turning it into a csv file with semicolons as delimiter with
 %a fixed site. (Sorry but this was a one-time process so we have not
-%automated it. Note that if you use the same dataset as in PETs you do not
+%automated it.) Note that if you use the same dataset as in PETs you do not
 %need to repeat this but simply use the .mat files.
-
+%
+% We have also included these altered files so that you know how it should look like after your manual tweeking. THe Caida projekt allowed us to include their data into our folder but you have to agree to the CAIDA license to use it and would like you to download the files directly from Caida if you want to use it outside of these scripts
+%
 
 clc
 clear all
 % loading the AS graph without provider customer relationships
 
-use2019=0;
+use2019=0; % In the paper we use the dataset for 2014, but you can also try with the 2019 data set by setting this to 1
+% Of course you have to modify the path manually
 if(use2019==1)
-    folder='D:\svn\nextphi\code\raw_data_new\as-relationship\'
-    filename='20190701.as-rel.txt'
+    folder='caidaData\'
+    filename='20190701.as-rel_Modified'
 else
-    folder='D:\svn\nextphi\code\raw_data\caida_as_topology\'
-    filename='20140901.as-rel_G_noheader.txt'
+    folder='caidaData\'
+    filename='20140901.as-rel_Modified.txt'
 end
 %folder='D:\svn\nextphi\code\raw_data\caida_as_topology\as_rank\'
 %filename='truth-comms.txt'
@@ -98,11 +96,9 @@ else
 % For 2014 we also read in the IP address range     
 % load the file with the AS to IP addresses:
 
-folder='D:\svn\nextphi\code\raw_data\routeview_prefix_to_as\routeviews-rv2-20140901-1200.pfx2as\'
-filename='routeviews-rv2-20140901-1200_editedGeorg.csv'
+folder='caidaData\'
+filename='routeviews-rv2-20140901-1200_Modified.csv'
 
-%folder='D:\svn\nextphi\code\raw_data\caida_as_topology\as_rank\'
-%filename='truth-comms.txt'
 
 
 fileAddress = strcat(folder,filename);
