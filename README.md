@@ -2,12 +2,12 @@
 This repository is related to the paper __dPHI: An improved high-speed network-layer anonymity protocol__ published at PETS 2020.
 It serves the purpose of enabling others to reproduce our findings with regard to:
 
-1. performance measuring of the cryptographic operations of our anonymous routing protocol 
+1. performance measuring of the cryptographic operations of our anonymous routing protocol
 2. the Matlab code and data for the quantitative anonymity analysis of dPHI, LAP and HORNET (see paper for all related measures)
 
-While instructions on how to get the C-implementation up and running _(i.)_ are presented in the following, the Matlab scripts for analysis _(ii.)_, including a dedicated readme-file on how to use them, can be found in the subfolder _analysis_. 
+While instructions on how to get the C-implementation up and running _(i.)_ are presented in the following, the Matlab scripts for analysis _(ii.)_, including a dedicated readme-file on how to use them, can be found in the subfolder _analysis_.
 
-___Note:___ When using this code or parts of it, please cite our related publication!
+___Note:___ When using this code or parts of it, please cite our related [publication](https://www.petsymposium.org/2020/files/papers/issue3/popets-2020-0054.pdf)!
 
 
 The code for performance measuring of cryptographic operations is not self-contained but requires other libraries to work. In the following we will provide an outline on how to setup an environment in which our code may be compiled and the resulting binary executed.
@@ -89,7 +89,79 @@ _(Adapt the path to fit your environment.)_
 ```
 The only output that will be produced when calling this, is a line like:
 ```
-AVG of middle quarter: 463
+1. Following are tests for the GCM operations of isa-l_crypto:
+SEED: 4660
+AES-GCM standard test vectors new api:
+Standard vector new api 0/10  Keylen:16 IVlen:12 PTLen:48 AADlen:28 Tlen:16
+Standard vector new api 1/10  Keylen:16 IVlen:12 PTLen:42 AADlen:20 Tlen:16
+Standard vector new api 2/10  Keylen:16 IVlen:12 PTLen:16 AADlen:16 Tlen:16
+Standard vector new api 3/10  Keylen:16 IVlen:12 PTLen:32 AADlen:16 Tlen:16
+Standard vector new api 4/10  Keylen:16 IVlen:12 PTLen:32 AADlen:16 Tlen:16
+Standard vector new api 5/10  Keylen:16 IVlen:12 PTLen:16 AADlen:0 Tlen:16
+Standard vector new api 6/10  Keylen:16 IVlen:12 PTLen:64 AADlen:0 Tlen:16
+Standard vector new api 7/10  Keylen:16 IVlen:12 PTLen:60 AADlen:20 Tlen:16
+Standard vector new api 8/10  Keylen:32 IVlen:12 PTLen:16 AADlen:0 Tlen:16
+Standard vector new api 9/10  Keylen:32 IVlen:12 PTLen:64 AADlen:0 Tlen:16
+Standard vector new api 10/10  Keylen:32 IVlen:12 PTLen:60 AADlen:20 Tlen:16
+
+...Pass
+
+
+2. Session establishment with help of the dPHI protocol for one pre-determined path:
+M: SID and PubS fit
+M: auth tags ok
+S and M derived identical Session Key
+M: correct Destination recovered
+M: correct Nonce recovered
+Node 6: valid auth tag
+Node 5: valid auth tag
+Node 4: valid auth tag
+Node 3: valid auth tag
+Node 2: valid auth tag
+Node 1: valid auth tag
+S and W have identical Nonce
+S got Midway_Reply with correct SID
+S got Midway_Reply with correct H.pos
+S could verify H.midway
+Node 1: correct posV1 recovered
+Node 2: correct posV1 recovered
+Node 3: correct posV1 recovered
+W: H.dest successfully reconstructed
+D: SID and PubS fit
+D: Decrypt V1 with correct Tag
+D: Assert V1 OK
+W: Pos ok
+Node 3: valid auth tag
+Node 2: valid auth tag
+Node 1: valid auth tag
+S: TAG from V1||V2 ok
+S: V1 is correct
+S: V2 is correct
+Node 1: correct posV1 recovered
+Node 2: correct posV1 recovered
+Node 3: correct posV1 recovered
+W: correct posV1 recovered
+W: MAC V1||V2 correct
+Node 8: correct posV2 recovered
+Node 9: correct posV2 recovered
+Node 10: correct posV2 recovered
+Node 11: correct posV2 recovered
+Node 12: correct posV2 recovered
+
+
+3. Performance measurement of the single operations as presented in the paper:
+(All values represent averages of the middle quarter of all measurements for said protocol step)
+
+Midway Request for A != M:	 424
+Midway Request for A == M:	 149981
+Backtracking for A != W:	 151
+Backtracking for A == W:	 1779
+Handshake to d for A == W:	 1593
+Handshake to d for A != W:	 434
+Handshake reply to s for A != W: 149
+Handshake reply to s for A == W: 1298
+Transmission phase for A != W:	 155
+Transmission phase for A == W:	 320
 ```
 This line gives the averaged number of cycles for the middle quartile of measurements for performing the first operation of our protocol for 1,000,000 times. How to measure other steps in the protocol is documented within `dphi.c` and requires manually changing the code at designated positions.
 

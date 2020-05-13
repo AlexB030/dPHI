@@ -25,6 +25,12 @@
 #include "aes_gcm.h"
 #include "sha256_mb.h"
 #include "x86intrin.h"
+#include "gcm_vectors.h"
+#include "types.h"
+
+#ifndef TEST_SEED
+# define TEST_SEED 0x1234
+#endif
 
 #define DEBUG 0
 #define TO_HELPER_NODE 1
@@ -147,7 +153,7 @@ void cVectorAnalysis(void)
   {
     avg=avg+newVector[i];
   }
-  printf("AVG of middle quarter: %ld\n",avg/newVSize);
+  printf("%ld\n",avg/newVSize);
 }
 
 /**************************************************************************
@@ -487,7 +493,7 @@ struct Header sToM(struct Header header, struct Node node, struct gcm_key_data g
  helper node M. This is still the "Maidway Request" and likewise relates to
  "Algorithm 2" in the paper's appendix.
 **************************************************************************/
-struct Header iAmHelper(struct Node *node,struct Header header,struct Payload payload, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2)
+struct Header iAmHelper(struct Node *node,struct Header header,struct Payload payload, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2,int info)
 {
   uint64_t a, b;
   a=__rdtsc();
@@ -495,7 +501,7 @@ struct Header iAmHelper(struct Node *node,struct Header header,struct Payload pa
 
   //Assert(H.sid == Hash(P.pubS))
   getHash(payload.pubKeyS,digest,32);
-  if(DEBUG ==1){
+  if(info ==1){
     if(memcmp(header.sid, digest, 16) == 0)
     {
       printf("\033[0;32m");
@@ -519,7 +525,7 @@ struct Header iAmHelper(struct Node *node,struct Header header,struct Payload pa
   uint8_t tag2[TAG_SIZE];
   aes_gcm_dec_256(&gkey, &gctx, pt2, payload.ct, 12, payload.iv, header.sid, 16, tag2, TAG_SIZE);
 
-  if(DEBUG ==1){
+  if(info ==1){
     if(memcmp(payload.at, tag2, TAG_SIZE) == 0){
       printf("\033[0;32m");
       printf("M: auth tags ok\n");
@@ -568,7 +574,7 @@ struct Header iAmHelper(struct Node *node,struct Header header,struct Payload pa
  The same function here is used to cover "Algorithm 10" from the paper's
  appendix, as it, in principle, does the same thing: forwarding back to s.
 **************************************************************************/
-struct Header mToS(struct Header header, struct Node *node, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2)
+struct Header mToS(struct Header header, struct Node *node, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2, int info)
 {
   uint64_t a, b;
   a=__rdtsc();
@@ -598,6 +604,8 @@ struct Header mToS(struct Header header, struct Node *node, struct gcm_key_data 
     printer("  myPt      :",pt2,TXT_SIZE);
     printer("  tag1      :",header.v1[header.pos].at,TAG_SIZE);
     printer("  tag2      :",tag2,TAG_SIZE);
+  }
+  if(info == 1){
     if(memcmp(header.v1[header.pos].at, tag2, TAG_SIZE) == 0){
       printf("\033[0;32m");
       printf("Node %d: valid auth tag\n",node->id);
@@ -623,7 +631,7 @@ struct Header mToS(struct Header header, struct Node *node, struct gcm_key_data 
 
  This function relates to parts of "Algorithm 3" in the paper's appendix.
 **************************************************************************/
-struct Header iAmWbacktracking(struct Header header, struct Node *node, struct gcm_key_data gkey, uint8_t *freshIv, uint8_t *freshIv2, uint64_t * c1, uint64_t * c2)
+struct Header iAmWbacktracking(struct Header header, struct Node *node, struct gcm_key_data gkey, uint8_t *freshIv, uint8_t *freshIv2, uint64_t * c1, uint64_t * c2,int info)
 {
   uint64_t a, b;
   a=__rdtsc();
@@ -654,6 +662,8 @@ struct Header iAmWbacktracking(struct Header header, struct Node *node, struct g
     printer("  myPt      :",pt2,TXT_SIZE);
     printer("  tag1      :",header.v1[header.pos].at,TAG_SIZE);
     printer("  tag2      :",tag2,TAG_SIZE);
+  }
+  if(info == 1){
     if(memcmp(header.v1[header.pos].at, tag2, TAG_SIZE) == 0){
       printf("\033[0;32m");
       printf("Node %d: valid auth tag\n",node->id);
@@ -730,12 +740,12 @@ struct Header iAmWbacktracking(struct Header header, struct Node *node, struct g
 
  This function relates "Algorithm 5" in the paper's appendix.
 **************************************************************************/
-void backAtS(struct Header *header, struct Header *headerStored, struct Node *node, struct Node *destNode, struct Payload *payload)
+void backAtS(struct Header *header, struct Header *headerStored, struct Node *node, struct Node *destNode, struct Payload *payload,int info)
 {
   // this is a work-around since our entryAS, on the way from s to M, does not check if its predecessor was the client, therefore has NOT R.type=="entryNode" and therefore does not know that there is NO NEED to decrement H.pos on the way back.... i.e. it decrements one too many times, so we increment manually here again
   header->pos=(header->pos + 1) % VECTOR_LENGTH;
   //Assert(H.sid == Hs.sid && H.pos == Hs.pos)
-  if(DEBUG ==1){
+  if(info ==1){
     if(memcmp(header->sid, headerStored->sid, 16) == 0){
       printf("\033[0;32m");
       printf("S got Midway_Reply with correct SID\n");
@@ -771,7 +781,7 @@ void backAtS(struct Header *header, struct Header *headerStored, struct Node *no
   getHash(vectorToHash,nrep,32);
 
   //Assert(nrep == H.midway)
-  if(DEBUG ==1){
+  if(info ==1){
     if(memcmp(header->midway,nrep,16) == 0){
       printf("\033[0;32m");
       printf("S could verify H.midway\n");
@@ -828,7 +838,7 @@ void backAtS(struct Header *header, struct Header *headerStored, struct Node *no
  that only deal with forwarding, NOT the switch from V1 to V2 conducted by
  Midway node W.
 **************************************************************************/
-struct Header forwardStoW(struct Header header, struct Node *node, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2)
+struct Header forwardStoW(struct Header header, struct Node *node, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2,int info)
 {
   uint64_t a, b;
   a=__rdtsc();
@@ -852,7 +862,7 @@ struct Header forwardStoW(struct Header header, struct Node *node, struct gcm_ke
   uint8_t pt2[TXT_SIZE];
   aes_gcm_dec_256(&gkey, &gctx, pt2, header.v1[header.pos].ct, TXT_SIZE, header.v1[header.pos].iv, myAad, AAD_SIZE, tag2, TAG_SIZE);
 
-  if(DEBUG ==1){
+  if(info ==1){
     if(memcmp(&header.pos,pt2+9,1) == 0)
     {
       printf("\033[0;32m");
@@ -881,7 +891,7 @@ struct Header forwardStoW(struct Header header, struct Node *node, struct gcm_ke
 
  This function relates to "Algorithm 6" in the paper's appendix.
 **************************************************************************/
-void iAmWforwardToD(struct Header *header, struct Node *node, uint8_t *freshIv, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2)
+void iAmWforwardToD(struct Header *header, struct Node *node, uint8_t *freshIv, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2,int info)
 {
   uint64_t a,b;
   a=__rdtsc();
@@ -921,7 +931,7 @@ void iAmWforwardToD(struct Header *header, struct Node *node, uint8_t *freshIv, 
   // Alg6:6
   memcpy(encHdest,header->dest,4);
   aes_gcm_dec_256(&gkey, &gctx, header->dest, encHdest, 4, node->midwayIv, header->sid, 16, tag2, TAG_SIZE);
-  if(DEBUG == 1){
+  if(info == 1){
     if(memcmp(tag2, node->midwayAt, 16) == 0){
       printf("\033[0;32m");
       printf("W: H.dest successfully reconstructed\n");
@@ -1116,7 +1126,7 @@ struct Header wToD(struct Header header, struct Node node, struct gcm_key_data g
 
  This function relates to "Algorithm 8" in the paper's appendix.
 **************************************************************************/
-void iAmD(struct Header *header, struct Node *node, uint8_t *freshIv, struct gcm_key_data gkey, struct Payload *payload, uint64_t * c1, uint64_t * c2)
+void iAmD(struct Header *header, struct Node *node, uint8_t *freshIv, struct gcm_key_data gkey, struct Payload *payload, uint64_t * c1, uint64_t * c2,int info)
 {
   uint64_t a, b;
   a=__rdtsc();
@@ -1129,7 +1139,7 @@ void iAmD(struct Header *header, struct Node *node, uint8_t *freshIv, struct gcm
 
   // Alg 8:2
   getHash(payload->pubKeyS,digest,32);
-  if(DEBUG ==1){
+  if(info ==1){
     if(memcmp(header->sid, digest, 16) == 0)
     {
       printf("\033[0;32m");
@@ -1150,7 +1160,7 @@ void iAmD(struct Header *header, struct Node *node, uint8_t *freshIv, struct gcm
   aes_gcm_pre_256(node->sessionKey, &gkey);
   aes_gcm_dec_256(&gkey, &gctx, ptV1, payload->vectorSafe, ctLen, payload->iv, header->sid, 16, tag2, TAG_SIZE);
 
-  if(DEBUG ==1){
+  if(info ==1){
     if(memcmp(payload->at, tag2, 16) == 0)
     {
       printf("\033[0;32m");
@@ -1167,7 +1177,7 @@ void iAmD(struct Header *header, struct Node *node, uint8_t *freshIv, struct gcm
   // Alg 8:5
   vectorToByteArray(header->v1,currentV1);
 
-  if(DEBUG ==1){
+  if(info ==1){
     if(memcmp(currentV1, ptV1, ctLen) == 0)
     {
       printf("\033[0;32m");
@@ -1253,7 +1263,7 @@ struct Header dToW(struct Header header, struct Node *node, struct gcm_key_data 
  This function relates to the part of "Algorithm 9" in the paper's
  appendix, where arrival at W is covered.
 **************************************************************************/
-void iAmWbackToS(struct Header *header, struct Node *node, uint8_t *freshIv, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2)
+void iAmWbackToS(struct Header *header, struct Node *node, uint8_t *freshIv, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2,int info)
 {
   uint64_t a,b;
   a=__rdtsc();
@@ -1273,7 +1283,7 @@ void iAmWbackToS(struct Header *header, struct Node *node, uint8_t *freshIv, str
   int offset=0;
   uint8_t dummyCT[2], dummyPT[2];
 
-  generateIv(node->midwayIv4);
+  //generateIv(node->midwayIv4);
 
   // Alg 9:2
   posV2=header->pos;
@@ -1289,7 +1299,7 @@ void iAmWbackToS(struct Header *header, struct Node *node, uint8_t *freshIv, str
   memcpy(myAad, header->sid, 16 * sizeof(uint8_t));
   memcpy(myAad + 16, cPrevV2, TXT_SIZE * sizeof(uint8_t));
   aes_gcm_dec_256(&gkey, &gctx, originalRV2, header->v2[header->pos].ct, TXT_SIZE, header->v2[header->pos].iv, myAad, AAD_SIZE, tag2, TAG_SIZE);
-  if(DEBUG == 1){
+  if(info == 1){
     if(memcmp(originalRV2+10, &posV2, 1) == 0){
       printf("\033[0;32m");
       printf("W: Pos ok\n");
@@ -1360,7 +1370,7 @@ void iAmWbackToS(struct Header *header, struct Node *node, uint8_t *freshIv, str
  This function relates to the part of "Algorithm 11" in the paper's
  appendix, where arrival at W is covered.
 **************************************************************************/
-void finishAtS(struct Header *header, struct Header *headerStored, struct Node *node, struct Node *destNode, struct Payload *payload, struct gcm_key_data gkey, uint8_t *freshIv, uint64_t * c1, uint64_t * c2)
+void finishAtS(struct Header *header, struct Header *headerStored, struct Node *node, struct Node *destNode, struct Payload *payload, struct gcm_key_data gkey, uint8_t *freshIv, uint64_t * c1, uint64_t * c2,int info)
 {
   // this is a work-around since our entryAS, on the way from s to M, does not check if its predecessor was the client, therefore has NOT R.type=="entryNode" and therefore does not know that there is NO NEED to decrement H.pos on the way back.... i.e. it decrements one too many times, so we increment manually here again
   header->pos=(header->pos + 1) % VECTOR_LENGTH;
@@ -1375,7 +1385,7 @@ void finishAtS(struct Header *header, struct Header *headerStored, struct Node *
 
   //Alg 11:3
   aes_gcm_dec_256(&gkey, &gctx, bothV, payload->vectorSafe, 2*ctLen, payload->iv, header->sid, 16, tag1, TAG_SIZE);
-  if(DEBUG ==1){
+  if(info ==1){
     if(memcmp(payload->at, tag1, TAG_SIZE) == 0)
     {
       printf("\033[0;32m");
@@ -1392,7 +1402,7 @@ void finishAtS(struct Header *header, struct Header *headerStored, struct Node *
   // Alg 11:4-5 comparison to stored header is missing here since stored header is incomplete (no deep copy)
   vectorToByteArray(header->v1,derivedV1);
   vectorToByteArray(header->v2,derivedV2);
-  if(DEBUG ==1){
+  if(info ==1){
     if(memcmp(derivedV1, bothV, ctLen) == 0)
     {
       printf("\033[0;32m");
@@ -1416,6 +1426,8 @@ void finishAtS(struct Header *header, struct Header *headerStored, struct Node *
       printf("S: V2 not correct\n");
       printf("\033[0m");
     }
+  }
+  if(DEBUG ==1){
     printer("derived V2:   \n",derivedV2,ctLen);
     printer("retrieved V2: \n",bothV+ctLen,ctLen);
   }
@@ -1436,7 +1448,7 @@ void finishAtS(struct Header *header, struct Header *headerStored, struct Node *
  This function relates to the part of "Algorithm 12" where Midway node W
  performs the switch from V1 to V2.
 **************************************************************************/
-void iAmWTransmissionToD2(struct Header *header, struct Node *node, uint8_t *freshIv, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2)
+void iAmWTransmissionToD2(struct Header *header, struct Node *node, uint8_t *freshIv, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2,int info)
 {
   uint64_t a,b;
   a=__rdtsc();
@@ -1447,7 +1459,7 @@ void iAmWTransmissionToD2(struct Header *header, struct Node *node, uint8_t *fre
   uint8_t cPrevV1[TXT_SIZE];
   uint8_t posPrevV1, posV1, posV2, dummyCT[2], dummyPT[2];
   uint8_t aadForMAC[2*TXT_SIZE+16];
-  aes_gcm_pre_256(node->longTermKey, &gkey);
+  //aes_gcm_pre_256(node->longTermKey, &gkey);
   posV1=header->pos;
   if (header->pos == 0){
     posPrevV1=(header->pos + VECTOR_LENGTH -1) % VECTOR_LENGTH;
@@ -1464,7 +1476,7 @@ void iAmWTransmissionToD2(struct Header *header, struct Node *node, uint8_t *fre
 
   memcpy(&posV2,pt2+10,1);
 
-  if(DEBUG == 1){
+  if(info == 1){
     if(memcmp(&header->pos,pt2+9,1) == 0)
     {
       printf("\033[0;32m");
@@ -1484,7 +1496,7 @@ void iAmWTransmissionToD2(struct Header *header, struct Node *node, uint8_t *fre
   memcpy(aadForMAC+TXT_SIZE+TXT_SIZE,header->sid,16);
   aes_gcm_enc_256(&gkey, &gctx, dummyCT, dummyPT, 0, node->midwayIv4, aadForMAC, 2*TXT_SIZE+16, tag2, TAG_SIZE);
 
-  if(DEBUG == 1){
+  if(info == 1){
     if(memcmp(header->midway,tag2,TAG_SIZE) == 0)
     {
       printf("\033[0;32m");
@@ -1513,7 +1525,7 @@ void iAmWTransmissionToD2(struct Header *header, struct Node *node, uint8_t *fre
 
  This function relates to "Algorithm 13" in the paper's appendix.
 **************************************************************************/
-struct Header forwardWtoD(struct Header header, struct Node *node, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2)
+struct Header forwardWtoD(struct Header header, struct Node *node, struct gcm_key_data gkey, uint64_t * c1, uint64_t * c2,int info)
 {
   uint64_t a, b;
   a=__rdtsc();
@@ -1537,7 +1549,7 @@ struct Header forwardWtoD(struct Header header, struct Node *node, struct gcm_ke
   uint8_t pt2[TXT_SIZE];
   aes_gcm_dec_256(&gkey, &gctx, pt2, header.v2[header.pos].ct, TXT_SIZE, header.v2[header.pos].iv, myAad, AAD_SIZE, tag2, TAG_SIZE);
 
-  if(DEBUG ==1){
+  if(info ==1){
     if(memcmp(&header.pos,pt2+10,1) == 0)
     {
       printf("\033[0;32m");
@@ -1563,16 +1575,273 @@ struct Header forwardWtoD(struct Header header, struct Node *node, struct gcm_ke
  From a computational perspective, in the transmission phase, effort of
  routing from d to s is the same as that for s to d. Also, the way back has
  already been implemented and measured during handshake. Even though this
- was not the trnasmission phase, operations are the same and are therefore
+ was not the transmission phase, operations are the same and are therefore
  not repeated again.
 **************************************************************************/
 
 /**************************************************************************
- In the main method, the previously defined functions ar combined to
+ The following functions are taken from "gcm_std_vectors_test.c" to run the
+ tests for GCM provided with isa-l_crypto
+**************************************************************************/
+
+int check_data(uint8_t * test, uint8_t * expected, uint64_t len, char *data_name)
+{
+	int mismatch;
+	int OK = 0;
+
+	mismatch = memcmp(test, expected, len);
+	if (mismatch) {
+		OK = 1;
+		printf("  expected results don't match %s \t\t", data_name);
+		{
+			uint64_t a;
+			for (a = 0; a < len; a++) {
+				if (test[a] != expected[a]) {
+					printf(" '%x' != '%x' at %lx of %lx\n",
+					       test[a], expected[a], a, len);
+					break;
+				}
+			}
+		}
+	}
+	return OK;
+}
+
+int test_gcm128_std_vectors(gcm_vector const *vector)
+{
+	struct gcm_key_data gkey;
+	struct gcm_context_data gctx;
+	int OK = 0;
+	// Temporary array for the calculated vectors
+	uint8_t *ct_test = NULL;
+	uint8_t *pt_test = NULL;
+	uint8_t *IV_c = NULL;
+	uint8_t *T_test = NULL;
+	uint8_t *T2_test = NULL;
+	uint64_t IV_alloc_len = 0;
+
+	// Allocate space for the calculated ciphertext
+	ct_test = malloc(vector->Plen);
+	// Allocate space for the calculated ciphertext
+	pt_test = malloc(vector->Plen);
+	if ((ct_test == NULL) || (pt_test == NULL)) {
+		fprintf(stderr, "Can't allocate ciphertext or plaintext memory\n");
+		return 1;
+	}
+	IV_alloc_len = vector->IVlen;
+	// Allocate space for the calculated ciphertext
+	IV_c = malloc(IV_alloc_len);
+	if (IV_c == NULL) {
+		fprintf(stderr, "Can't allocate ciphertext memory\n");
+		return 1;
+	}
+	memcpy(IV_c, vector->IV, vector->IVlen);
+
+	T_test = malloc(vector->Tlen);
+	T2_test = malloc(vector->Tlen);
+	if ((T_test == NULL) || (T2_test == NULL)) {
+		fprintf(stderr, "Can't allocate tag memory\n");
+		return 1;
+	}
+	// This is only required once for a given key
+	aes_gcm_pre_128(vector->K, &gkey);
+
+	////
+	// ISA-l Encrypt
+	////
+	aes_gcm_enc_128(&gkey, &gctx, ct_test, vector->P, vector->Plen,
+			IV_c, vector->A, vector->Alen, T_test, vector->Tlen);
+	OK |= check_data(ct_test, vector->C, vector->Plen, "ISA-L encrypted cypher text (C)");
+	OK |= check_data(T_test, vector->T, vector->Tlen, "ISA-L tag (T)");
+
+	// test of in-place encrypt
+	memcpy(pt_test, vector->P, vector->Plen);
+	aes_gcm_enc_128(&gkey, &gctx, pt_test, pt_test, vector->Plen, IV_c,
+			vector->A, vector->Alen, T_test, vector->Tlen);
+	OK |= check_data(pt_test, vector->C, vector->Plen,
+			 "ISA-L encrypted cypher text(in-place)");
+	memset(ct_test, 0, vector->Plen);
+	memset(T_test, 0, vector->Tlen);
+
+	////
+	// ISA-l Decrypt
+	////
+	aes_gcm_dec_128(&gkey, &gctx, pt_test, vector->C, vector->Plen,
+			IV_c, vector->A, vector->Alen, T_test, vector->Tlen);
+	OK |= check_data(pt_test, vector->P, vector->Plen, "ISA-L decrypted plain text (P)");
+	// GCM decryption outputs a 16 byte tag value that must be verified against the expected tag value
+	OK |= check_data(T_test, vector->T, vector->Tlen, "ISA-L decrypted tag (T)");
+
+	// test in in-place decrypt
+	memcpy(ct_test, vector->C, vector->Plen);
+	aes_gcm_dec_128(&gkey, &gctx, ct_test, ct_test, vector->Plen, IV_c,
+			vector->A, vector->Alen, T_test, vector->Tlen);
+	OK |= check_data(ct_test, vector->P, vector->Plen, "ISA-L plain text (P) - in-place");
+	OK |=
+	    check_data(T_test, vector->T, vector->Tlen, "ISA-L decrypted tag (T) - in-place");
+	// ISA-L enc -> ISA-L dec
+	aes_gcm_enc_128(&gkey, &gctx, ct_test, vector->P, vector->Plen,
+			IV_c, vector->A, vector->Alen, T_test, vector->Tlen);
+	memset(pt_test, 0, vector->Plen);
+	aes_gcm_dec_128(&gkey, &gctx, pt_test, ct_test, vector->Plen, IV_c,
+			vector->A, vector->Alen, T2_test, vector->Tlen);
+	OK |=
+	    check_data(pt_test, vector->P, vector->Plen,
+		       "ISA-L self decrypted plain text (P)");
+	OK |= check_data(T_test, T2_test, vector->Tlen, "ISA-L self decrypted tag (T)");
+
+	memset(pt_test, 0, vector->Plen);
+
+	if (NULL != ct_test)
+		free(ct_test);
+	if (NULL != pt_test)
+		free(pt_test);
+	if (NULL != IV_c)
+		free(IV_c);
+	if (NULL != T_test)
+		free(T_test);
+	if (NULL != T2_test)
+		free(T2_test);
+
+	return OK;
+}
+
+int test_gcm256_std_vectors(gcm_vector const *vector)
+{
+	struct gcm_key_data gkey;
+	struct gcm_context_data gctx;
+	int OK = 0;
+	// Temporary array for the calculated vectors
+	uint8_t *ct_test = NULL;
+	uint8_t *pt_test = NULL;
+	uint8_t *IV_c = NULL;
+	uint8_t *T_test = NULL;
+	uint8_t *T2_test = NULL;
+	uint64_t IV_alloc_len = 0;
+
+	// Allocate space for the calculated ciphertext
+	ct_test = malloc(vector->Plen);
+	// Allocate space for the calculated ciphertext
+	pt_test = malloc(vector->Plen);
+	if ((ct_test == NULL) || (pt_test == NULL)) {
+		fprintf(stderr, "Can't allocate ciphertext or plaintext memory\n");
+		return 1;
+	}
+	IV_alloc_len = vector->IVlen;
+	// Allocate space for the calculated ciphertext
+	IV_c = malloc(IV_alloc_len);
+	if (IV_c == NULL) {
+		fprintf(stderr, "Can't allocate ciphertext memory\n");
+		return 1;
+	}
+	memcpy(IV_c, vector->IV, vector->IVlen);
+
+	T_test = malloc(vector->Tlen);
+	T2_test = malloc(vector->Tlen);
+	if (T_test == NULL) {
+		fprintf(stderr, "Can't allocate tag memory\n");
+		return 1;
+	}
+	// This is only required once for a given key
+	aes_gcm_pre_256(vector->K, &gkey);
+
+	////
+	// ISA-l Encrypt
+	////
+	memset(ct_test, 0, vector->Plen);
+	aes_gcm_enc_256(&gkey, &gctx, ct_test, vector->P, vector->Plen,
+			IV_c, vector->A, vector->Alen, T_test, vector->Tlen);
+	OK |= check_data(ct_test, vector->C, vector->Plen, "ISA-L encrypted cypher text (C)");
+	OK |= check_data(T_test, vector->T, vector->Tlen, "ISA-L tag (T)");
+
+	// test of in-place encrypt
+	memcpy(pt_test, vector->P, vector->Plen);
+	aes_gcm_enc_256(&gkey, &gctx, pt_test, pt_test, vector->Plen, IV_c,
+			vector->A, vector->Alen, T_test, vector->Tlen);
+	OK |=
+	    check_data(pt_test, vector->C, vector->Plen,
+		       "ISA-L encrypted cypher text(in-place)");
+	memset(ct_test, 0, vector->Plen);
+	memset(T_test, 0, vector->Tlen);
+
+	////
+	// ISA-l Decrypt
+	////
+	aes_gcm_dec_256(&gkey, &gctx, pt_test, vector->C, vector->Plen,
+			IV_c, vector->A, vector->Alen, T_test, vector->Tlen);
+	OK |= check_data(pt_test, vector->P, vector->Plen, "ISA-L decrypted plain text (P)");
+	// GCM decryption outputs a 16 byte tag value that must be verified against the expected tag value
+	OK |= check_data(T_test, vector->T, vector->Tlen, "ISA-L decrypted tag (T)");
+
+	// test in in-place decrypt
+	memcpy(ct_test, vector->C, vector->Plen);
+	aes_gcm_dec_256(&gkey, &gctx, ct_test, ct_test, vector->Plen, IV_c,
+			vector->A, vector->Alen, T_test, vector->Tlen);
+	OK |= check_data(ct_test, vector->P, vector->Plen, "ISA-L plain text (P) - in-place");
+	OK |=
+	    check_data(T_test, vector->T, vector->Tlen, "ISA-L decrypted tag (T) - in-place");
+	// ISA-L enc -> ISA-L dec
+	aes_gcm_enc_256(&gkey, &gctx, ct_test, vector->P, vector->Plen,
+			IV_c, vector->A, vector->Alen, T_test, vector->Tlen);
+	memset(pt_test, 0, vector->Plen);
+	aes_gcm_dec_256(&gkey, &gctx, pt_test, ct_test, vector->Plen, IV_c,
+			vector->A, vector->Alen, T2_test, vector->Tlen);
+	OK |=
+	    check_data(pt_test, vector->P, vector->Plen,
+		       "ISA-L self decrypted plain text (P)");
+	OK |= check_data(T_test, T2_test, vector->Tlen, "ISA-L self decrypted tag (T)");
+
+	if (NULL != ct_test)
+		free(ct_test);
+	if (NULL != pt_test)
+		free(pt_test);
+	if (NULL != IV_c)
+		free(IV_c);
+	if (NULL != T_test)
+		free(T_test);
+	if (NULL != T2_test)
+		free(T2_test);
+
+	return OK;
+}
+
+int test_gcm_std_vectors(void)
+{
+	int const vectors_cnt = sizeof(gcm_vectors) / sizeof(gcm_vectors[0]);
+	int vect;
+	int OK = 0;
+
+	printf("AES-GCM standard test vectors new api:\n");
+	for (vect = 0; (vect < vectors_cnt); vect++) {
+#ifdef DEBUG
+		printf("Standard vector new api %d/%d"
+		       "  Keylen:%d IVlen:%d PTLen:%d AADlen:%d Tlen:%d\n",
+		       vect, vectors_cnt - 1, (int)gcm_vectors[vect].Klen,
+		       (int)gcm_vectors[vect].IVlen, (int)gcm_vectors[vect].Plen,
+		       (int)gcm_vectors[vect].Alen, (int)gcm_vectors[vect].Tlen);
+#else
+		printf(".");
+#endif
+		if (BITS_128 == gcm_vectors[vect].Klen)
+			OK |= test_gcm128_std_vectors(&gcm_vectors[vect]);
+		else
+			OK |= test_gcm256_std_vectors(&gcm_vectors[vect]);
+		if (0 != OK)
+			return OK;
+	}
+	printf("\n");
+	return OK;
+}
+
+/**************************************************************************
+ In the main method, the previously defined functions are combined to
  iterate through all steps of the protocol.
 **************************************************************************/
-int main(void)
+int main(int argc, char **argv)
 {
+  /**************************************************************************
+   Init of some needed variables and population of structs
+  **************************************************************************/
   srand(time(NULL));
   uint64_t c1, c2, rdTest1, rdTest2;
 
@@ -1600,86 +1869,66 @@ int main(void)
     memcpy(nodes[i].midwaySeed+8,&rdTest2,8);
   }
 
-  iAmS(&nodes[0],&nodes[7],&nodes[13],&header,&payload,&headerStored);
-  if(DEBUG ==1){
-    headerprint(&header);
-    payloadprint(&payload);
-  }
-
-  //do some checks
-  //header and headerStored same?
-  if(DEBUG ==1){
-    if(memcmp(&header,&headerStored,sizeof header)==0)
-    {
-      printf("\033[0;32m");
-      printf("Header copy ok\n");
-      printf("\033[0m");
-    }
-    else
-    {
-      printf("\033[0;31m");
-      printf("Header copy NOT ok\n");
-      printf("\033[0m");
-    }
-  }
-
   uint8_t *freshIv;
   freshIv = malloc(IV_SIZE);
   uint8_t *freshIv2;
   freshIv2 = malloc(IV_SIZE);
   struct gcm_key_data gkey;
 
-  /*this is the loop for measuring required clock cyles.
-  PLEASE NOTE, that the precomputations for the key as
-  well as the genration of a fresh IV should not be part
-  of the measurement. If a routing node is up and running,
-  the required key struct should/would be present already.
-  Also we assume that fresh IVs are always at hand since
-  these can be generated during idle times. Therefore,
-  for this loop to reproduce the measured clock cycles
-  from the paper, the call for "generateIv(freshIv);"
-  should not be done from within the method "sToM"!
+  /**************************************************************************
+   Test of library functions to ensure correct operation (taken from
+   reference implementation in isa-l_crypto)
+  **************************************************************************/
+  printf("\033[0;35m");
+  printf("1. Following are tests for the GCM operations of isa-l_crypto:\n");
+  printf("\033[0m");
 
-  When placing this loop around other method calls for measurement, make sure to comment out any IV generation within that method and have them generated before start of the loop. Otherwise, your measurements will not only include cycles needed for cryptographic operations but also waiting time. */
-  aes_gcm_pre_256(nodes[1].longTermKey, &gkey);
-  generateIv(freshIv);
-  for(int q=0;q<NUM_OF_SIMS;q++)
-  {
-    header=sToM(header, nodes[1], gkey, freshIv, &c1, &c2);
-    cVector[q]=(int)(c2-c1);
+
+  int errors = 0;
+	int seed;
+
+	if (argc == 1)
+		seed = TEST_SEED;
+	else
+		seed = atoi(argv[1]);
+
+	srand(seed);
+	printf("SEED: %d\n", seed);
+
+	errors += test_gcm_std_vectors();
+
+	if (0 == errors)
+		printf("...Pass\n");
+	else
+		printf("...Fail\n");
+
+  /**************************************************************************
+   Perform steps of the protocol for one path to be established
+  **************************************************************************/
+  printf("\033[0;35m");
+  printf("\n\n2. Session establishment with help of the dPHI protocol for one pre-determined path:\n");
+  printf("\033[0m");
+
+  /* Initilization at the source */
+  iAmS(&nodes[0],&nodes[7],&nodes[13],&header,&payload,&headerStored);
+  if(DEBUG == 1){
+    headerprint(&header);
+    payloadprint(&payload);
   }
 
   /* now the message is on its way from s to M and routing nodes create their routing entries within V1. Please note, that in this simple example, there is no real routing information since the route is predetermined. Therefore, fake values are "made up" that are handled like real data to measure real processing timings. */
-  aes_gcm_pre_256(nodes[1].longTermKey, &gkey);
-  generateIv(freshIv);
-  header=sToM(header, nodes[1], gkey, freshIv, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[2].longTermKey, &gkey);
-  generateIv(freshIv);
-  header=sToM(header, nodes[2], gkey, freshIv, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[3].longTermKey, &gkey);
-  generateIv(freshIv);
-  header=sToM(header, nodes[3], gkey, freshIv, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[4].longTermKey, &gkey);
-  generateIv(freshIv);
-  header=sToM(header, nodes[4], gkey, freshIv, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[5].longTermKey, &gkey);
-  generateIv(freshIv);
-  header=sToM(header, nodes[5], gkey, freshIv, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[6].longTermKey, &gkey);
-  generateIv(freshIv);
-  header=sToM(header, nodes[6], gkey, freshIv, &c1, &c2);
-
+  for(int i=1;i<7;i++)
+  {
+    aes_gcm_pre_256(nodes[i].longTermKey, &gkey);
+    generateIv(freshIv);
+    header=sToM(header, nodes[i], gkey, freshIv, &c1, &c2);
+  }
 
   /*aes gcm precomputation is not done for node 7 as this node does not need to do any cryptographic operation with its longterm key. Instead, it performd the DH key agreement and then uses the session key to decrypt the payload containg the real destination of the source.*/
-  header=iAmHelper(&nodes[7],header,payload, gkey, &c1, &c2);
+  header=iAmHelper(&nodes[7],header,payload, gkey, &c1, &c2,1);
 
-  //the following instructions generate output on the CLI for tracking, if needed
-  if(DEBUG ==1){
+  /* This is for consistency checks to see if the protocol worked correctly this far. */
+  if(true){
     if(memcmp(nodes[0].sessionKey, nodes[7].sessionKey, 32) == 0){
       printf("\033[0;32m");
       printf("S and M derived identical Session Key\n");
@@ -1716,31 +1965,25 @@ int main(void)
     }
   }
 
-  // now the backtracking to s starts
-  aes_gcm_pre_256(nodes[6].longTermKey, &gkey);
-  header=mToS(header, &nodes[6], gkey, &c1, &c2);
+  /* Now begins the backtracking phase. Standard backtracking is done for all nodes except node 4. This is due to the fact that node 4 has manually be determined to be the Midway Node W and requires special handling of the message */
+  for(int i=6;i>0;i--)
+  {
+    if(i==4)
+    {
+      aes_gcm_pre_256(nodes[i].longTermKey, &gkey);
+      generateIv(freshIv);
+      generateIv(freshIv2);
+      header=iAmWbacktracking(header, &nodes[i], gkey, freshIv, freshIv2, &c1, &c2,1);
+    }
+    else
+    {
+      aes_gcm_pre_256(nodes[i].longTermKey, &gkey);
+      header=mToS(header, &nodes[i], gkey, &c1, &c2,1);
+    }
+  }
 
-  aes_gcm_pre_256(nodes[5].longTermKey, &gkey);
-  header=mToS(header, &nodes[5], gkey, &c1, &c2);
-
-
-  // on the way back to s, node 4 determines that it should become the midway node and performs required operations
-  aes_gcm_pre_256(nodes[4].longTermKey, &gkey);
-  generateIv(freshIv);
-  generateIv(freshIv2);
-  header=iAmWbacktracking(header, &nodes[4], gkey, freshIv, freshIv2, &c1, &c2);
-
-  // the other nodes continue with backtracking according to the protocol
-  aes_gcm_pre_256(nodes[3].longTermKey, &gkey);
-  header=mToS(header, &nodes[3], gkey, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[2].longTermKey, &gkey);
-  header=mToS(header, &nodes[2], gkey, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[1].longTermKey, &gkey);
-  header=mToS(header, &nodes[1], gkey, &c1, &c2);
-
-  if(DEBUG ==1){
+  /* When the message arrived at M, the Nonce that was previously encrypted was decrypted and put as plain text in the header so that the Midway node could read it. After identifying as the Midway node, W re-encrypted the Nonce. The following check verfies, that the Nonce decrypted by M and sent back to W really is the same as the one that s generated in the beginning.*/
+  if(true){
     //check if S and W have identical nonce
     if(memcmp(nodes[4].nonce, nodes[0].nonce, 8) == 0){
       printf("\033[0;32m");
@@ -1754,118 +1997,213 @@ int main(void)
     }
   }
 
-  // backtracking phase reaches s which can do checks as described in the paper
-  backAtS(&header,&headerStored,&nodes[0],&nodes[13],&payload);
+  /* The message returned to s and s could perform some integrity checks such as counting the number of changed elements in the routing segment to verify that the message did not take an unpredicted route. However, we omit these checks as we know the path has not been tempered with. Also, operations at s are not in the scope of our performance measuring. */
+  backAtS(&header,&headerStored,&nodes[0],&nodes[13],&payload,1);
 
   // now the transmission to real destination d is triggered and the message is on its way from s to the midway node W, where further operations are required.
-  aes_gcm_pre_256(nodes[1].longTermKey, &gkey);
-  header=forwardStoW(header, &nodes[1], gkey, &c1, &c2);
+  for(int i=1;i<4;i++)
+  {
+    aes_gcm_pre_256(nodes[i].longTermKey, &gkey);
+    header=forwardStoW(header, &nodes[i], gkey, &c1, &c2,1);
+  }
 
-  aes_gcm_pre_256(nodes[2].longTermKey, &gkey);
-  header=forwardStoW(header, &nodes[2], gkey, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[3].longTermKey, &gkey);
-  header=forwardStoW(header, &nodes[3], gkey, &c1, &c2);
-
-  // node 4 detects that it is the midway node W and will initiate communication to s. Among other things, this includes initialization of V2
+  /* node 4 detects that it is the midway node W and will initiate communication to d. Among other things, this includes initialization of V2 */
   aes_gcm_pre_256(nodes[4].longTermKey, &gkey);
   generateIv(freshIv);
-  iAmWforwardToD(&header, &nodes[4], freshIv, gkey, &c1, &c2);
+  iAmWforwardToD(&header, &nodes[4], freshIv, gkey, &c1, &c2,1);
 
   /* now the message is on its way to d and routing nodes create their routing entries. Please note, that in this simple example, there is no real routing information since the route is predetermined. Therefore, fake values are "made up" that are handled like real data */
-  aes_gcm_pre_256(nodes[8].longTermKey, &gkey);
+  for(int i=8;i<13;i++)
+  {
+    aes_gcm_pre_256(nodes[i].longTermKey, &gkey);
+    generateIv(freshIv);
+    header=wToD(header, nodes[i], gkey, freshIv, &c1, &c2);
+  }
+
+  /* the message arrives at d for the first time, where the session key with s is derived */
+  iAmD(&header, &nodes[13], freshIv, gkey, &payload, &c1, &c2,1);
+
+  /* now the message goes back from d to W. The intermediate nodes only have to look up their entries */
+  for(int i=12;i>7;i--)
+  {
+    aes_gcm_pre_256(nodes[i].longTermKey, &gkey);
+    header=dToW(header, &nodes[i], gkey, &c1, &c2);
+  }
+
+  /* W receives the reply from d that is intended to go back to s. But before W does so, it could perform integrity checks on the header to find out if the routing segment exhibits the expected number of changed entries */
   generateIv(freshIv);
-  header=wToD(header, nodes[8], gkey, freshIv, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[9].longTermKey, &gkey);
-  generateIv(freshIv);
-  header=wToD(header, nodes[9], gkey, freshIv, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[10].longTermKey, &gkey);
-  generateIv(freshIv);
-  header=wToD(header, nodes[10], gkey, freshIv, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[11].longTermKey, &gkey);
-  generateIv(freshIv);
-  header=wToD(header, nodes[11], gkey, freshIv, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[12].longTermKey, &gkey);
-  generateIv(freshIv);
-  header=wToD(header, nodes[12], gkey, freshIv, &c1, &c2);
-
-  // the message arrives at d for the first time, where the session key with s is derived
-  iAmD(&header, &nodes[13], freshIv, gkey, &payload, &c1, &c2);
-
-  // now the message goes back from d to W
-  aes_gcm_pre_256(nodes[12].longTermKey, &gkey);
-  header=dToW(header, &nodes[12], gkey, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[11].longTermKey, &gkey);
-  header=dToW(header, &nodes[11], gkey, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[10].longTermKey, &gkey);
-  header=dToW(header, &nodes[10], gkey, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[9].longTermKey, &gkey);
-  header=dToW(header, &nodes[9], gkey, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[8].longTermKey, &gkey);
-  header=dToW(header, &nodes[8], gkey, &c1, &c2);
-
-  /* W receives the reply from d that is intended to go back to s. But before W does so, it does integrity checks on the header to find out if the routing segment exhibits the expected number of changed entries */
-  generateIv(freshIv);
+  generateIv(nodes[4].midwayIv4);
   aes_gcm_pre_256(nodes[4].longTermKey, &gkey);
-  iAmWbackToS(&header, &nodes[4], freshIv, gkey, &c1, &c2);
+  iAmWbackToS(&header, &nodes[4], freshIv, gkey, &c1, &c2,1);
 
   /* now the mesage goes back from W to s. since this operation is 100% identical to the phase where the message goes from M to s, the same method is reused instead of inserting a duplicate */
-  aes_gcm_pre_256(nodes[3].longTermKey, &gkey);
-  header=mToS(header, &nodes[3], gkey, &c1, &c2);
+  for(int i=3;i>0;i--)
+  {
+    aes_gcm_pre_256(nodes[i].longTermKey, &gkey);
+    header=mToS(header, &nodes[i], gkey, &c1, &c2,1);
+  }
 
-  // TODO in every operation that simply forwards (read only), there should be an assert for correct posV
-  aes_gcm_pre_256(nodes[2].longTermKey, &gkey);
-  header=mToS(header, &nodes[2], gkey, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[1].longTermKey, &gkey);
-  header=mToS(header, &nodes[1], gkey, &c1, &c2);
-
-  // the reply from d arrives at s, where the integrity of the routing segment is checked
+  /* the reply from d arrives at s, where the integrity of the routing segment is checked */
   generateIv(freshIv);
   aes_gcm_pre_256(nodes[0].sessionKey, &gkey);
-  finishAtS(&header, &headerStored, &nodes[0], &nodes[13], &payload, gkey, freshIv, &c1, &c2);
+  finishAtS(&header, &headerStored, &nodes[0], &nodes[13], &payload, gkey, freshIv, &c1, &c2,1);
 
   /* now that the session has been established, regular transmission can be adopted. the following operations will only look up routing entries from the segment but not write anymore */
-  aes_gcm_pre_256(nodes[1].longTermKey, &gkey);
-  header=forwardStoW(header, &nodes[1], gkey, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[2].longTermKey, &gkey);
-  header=forwardStoW(header, &nodes[2], gkey, &c1, &c2);
-
-  aes_gcm_pre_256(nodes[3].longTermKey, &gkey);
-  header=forwardStoW(header, &nodes[3], gkey, &c1, &c2);
+  for(int i=1;i<4;i++)
+  {
+    aes_gcm_pre_256(nodes[i].longTermKey, &gkey);
+    header=forwardStoW(header, &nodes[i], gkey, &c1, &c2,1);
+  }
 
   /* W notices that it is indeed the midway node and performs the neccessary operations, i.e. looking up the routing entry in V2 etc. */
   aes_gcm_pre_256(nodes[4].longTermKey, &gkey);
   generateIv(freshIv);
-  iAmWTransmissionToD2(&header, &nodes[4], freshIv, gkey, &c1, &c2);
+  iAmWTransmissionToD2(&header, &nodes[4], freshIv, gkey, &c1, &c2,1);
 
   /* from W onwards, the routing nodes behave just like during transmission from s to W with the exception, that they perform their look ups in V2 */
-  aes_gcm_pre_256(nodes[8].longTermKey, &gkey);
-  header=forwardWtoD(header, &nodes[8], gkey, &c1, &c2);
+  for(int i=8;i<13;i++)
+  {
+    aes_gcm_pre_256(nodes[i].longTermKey, &gkey);
+    header=forwardWtoD(header, &nodes[i], gkey, &c1, &c2,1);
+  }
 
-  aes_gcm_pre_256(nodes[9].longTermKey, &gkey);
-  header=forwardWtoD(header, &nodes[9], gkey, &c1, &c2);
 
-  aes_gcm_pre_256(nodes[10].longTermKey, &gkey);
-  header=forwardWtoD(header, &nodes[10], gkey, &c1, &c2);
+  /**************************************************************************
+   Do performance test for the operations that are covered in the paper
+  **************************************************************************/
+  printf("\033[0;35m");
+  printf("\n\n3. Performance measurement of the single operations as presented in the paper:\n(All values represent averages of the middle quarter of all measurements for said protocol step)\n");
+  printf("\033[0m");
 
-  aes_gcm_pre_256(nodes[11].longTermKey, &gkey);
-  header=forwardWtoD(header, &nodes[11], gkey, &c1, &c2);
 
-  aes_gcm_pre_256(nodes[12].longTermKey, &gkey);
-  header=forwardWtoD(header, &nodes[12], gkey, &c1, &c2);
+  /*this is the loop for measuring required clock cyles.
+  PLEASE NOTE, that the precomputations for the key as
+  well as the genration of a fresh IV should not be part
+  of the measurement. If a routing node is up and running,
+  the required key struct should/would be present already.
+  Also we assume that fresh IVs are always at hand since
+  these can be generated during idle times. Therefore,
+  for this loop to reproduce the measured clock cycles
+  from the paper, the call for "generateIv(freshIv);"
+  should not be done from within the method "sToM"!
 
-  // this call performs operations to determine the average number of cycles for the operation that is enclosed in the for-loop
+  When placing this loop around other method calls for measurement, make sure to comment out any IV generation within that method and have them generated before start of the loop. Otherwise, your measurements will not only include cycles needed for cryptographic operations but also waiting time. */
+
+  /* Table 1, row 1 */
+  printf("\nMidway Request for A != M:\t ");
+  aes_gcm_pre_256(nodes[1].longTermKey, &gkey);
+  generateIv(freshIv);
+  for(int q=0;q<NUM_OF_SIMS;q++)
+  {
+    header=sToM(header, nodes[1], gkey, freshIv, &c1, &c2);
+    cVector[q]=(int)(c2-c1);
+  }
   cVectorAnalysis();
+
+  /* Table 1, row 2 */
+  printf("Midway Request for A == M:\t ");
+  for(int q=0;q<NUM_OF_SIMS;q++)
+  {
+    header=iAmHelper(&nodes[7],header,payload, gkey, &c1, &c2,0);
+    cVector[q]=(int)(c2-c1);
+  }
+  cVectorAnalysis();
+
+  /* Table 1, row 3 */
+  printf("Backtracking for A != W:\t ");
+  aes_gcm_pre_256(nodes[6].longTermKey, &gkey);
+  for(int q=0;q<NUM_OF_SIMS;q++)
+  {
+    header=mToS(header, &nodes[6], gkey, &c1, &c2,0);
+    cVector[q]=(int)(c2-c1);
+  }
+  cVectorAnalysis();
+
+  /* Table 1, row 4 */
+  printf("Backtracking for A == W:\t ");
+  aes_gcm_pre_256(nodes[4].longTermKey, &gkey);
+  generateIv(freshIv);
+  generateIv(freshIv2);
+  for(int q=0;q<NUM_OF_SIMS;q++)
+  {
+    header=iAmWbacktracking(header, &nodes[4], gkey, freshIv, freshIv2, &c1, &c2,0);
+    cVector[q]=(int)(c2-c1);
+  }
+  cVectorAnalysis();
+
+
+
+  /* Table 1, row 6 */
+  printf("Handshake to d for A == W:\t ");
+  aes_gcm_pre_256(nodes[4].longTermKey, &gkey);
+  generateIv(freshIv);
+  for(int q=0;q<NUM_OF_SIMS;q++)
+  {
+    iAmWforwardToD(&header, &nodes[4], freshIv, gkey, &c1, &c2,0);
+    cVector[q]=(int)(c2-c1);
+  }
+  cVectorAnalysis();
+
+
+  /* Table 1, row 5 */
+  printf("Handshake to d for A != W:\t ");
+  aes_gcm_pre_256(nodes[8].longTermKey, &gkey);
+  generateIv(freshIv);
+  for(int q=0;q<NUM_OF_SIMS;q++)
+  {
+    header=wToD(header, nodes[8], gkey, freshIv, &c1, &c2);
+    cVector[q]=(int)(c2-c1);
+  }
+  cVectorAnalysis();
+
+
+  /* Table 1, row 7 */
+  printf("Handshake reply to s for A != W: ");
+  aes_gcm_pre_256(nodes[12].longTermKey, &gkey);
+  for(int q=0;q<NUM_OF_SIMS;q++)
+  {
+    header=dToW(header, &nodes[12], gkey, &c1, &c2);
+    cVector[q]=(int)(c2-c1);
+  }
+  cVectorAnalysis();
+
+
+  /* Table 1, row 8 */
+  printf("Handshake reply to s for A == W: ");
+  generateIv(freshIv);
+  generateIv(nodes[4].midwayIv4);
+  aes_gcm_pre_256(nodes[4].longTermKey, &gkey);
+  for(int q=0;q<NUM_OF_SIMS;q++)
+  {
+    iAmWbackToS(&header, &nodes[4], freshIv, gkey, &c1, &c2,0);
+    cVector[q]=(int)(c2-c1);
+  }
+  cVectorAnalysis();
+
+
+  /* Table 1, row 9 */
+  printf("Transmission phase for A != W:\t ");
+  aes_gcm_pre_256(nodes[1].longTermKey, &gkey);
+  for(int q=0;q<NUM_OF_SIMS;q++)
+  {
+    header=forwardStoW(header, &nodes[1], gkey, &c1, &c2,0);
+    cVector[q]=(int)(c2-c1);
+  }
+  cVectorAnalysis();
+
+
+  /* Table 1, row 10 */
+  printf("Transmission phase for A == W:\t ");
+  aes_gcm_pre_256(nodes[4].longTermKey, &gkey);
+  generateIv(freshIv);
+  for(int q=0;q<NUM_OF_SIMS;q++)
+  {
+    iAmWTransmissionToD2(&header, &nodes[4], freshIv, gkey, &c1, &c2,0);
+    cVector[q]=(int)(c2-c1);
+  }
+  cVectorAnalysis();
+
+
   free(freshIv);
   free(freshIv2);
 
