@@ -12,6 +12,33 @@ ___Note:___ When using this code or parts of it, please cite our related [public
 
 The code for performance measuring of cryptographic operations is not self-contained but requires other libraries to work. In the following we will provide an outline on how to setup an environment in which our code may be compiled and the resulting binary executed.
 
+## Using Docker
+Should you do not feel like setting up a build environment, downloading all sources and compiling them, you can take a shortcut and download the ready-made docker image and run our code from wihtin a container. However, keep in mind, that the performance measurement results are impacted by the additional layer of abstraction introduced by docker.
+
+If you want to use our docker image, proceed as follows. Otherwise, for the manual setup, skip this section and proceed directly to the next section "Prerequisites".
+### Download and setup
+It is assumed that you have docker up and running:
+
+1. Download the docker image [file](https://cloud.esmt.org/s/iCJxbHNjrqxibFn)
+2. Unzip the archive `7za x ubuntu_dphi.7z`
+3. Load the image into your list of available docker images with 
+`docker load < ubuntu_dphi.tar`
+4. Create and run container through `docker run -it ubuntu_dphi`
+5. Go to subfolde where build script is located `cd /root/dPHI/isa-l_crypto/`
+6. Compile dPHI through `./dphi.sh`
+7. Run tests with `aes/dphi`
+
+The plain sequence of commands is:
+```
+7za x ubuntu_dphi.7z
+docker load < ubuntu_dphi.tar
+docker run -it ubuntu_dphi
+cd /root/dPHI/isa-l_crypto/
+./dphi.sh
+aes/dphi
+```
+
+
 
 
 ## Prerequisites
@@ -163,7 +190,7 @@ Handshake reply to s for A == W: 1298
 Transmission phase for A != W:	 155
 Transmission phase for A == W:	 320
 ```
-This line gives the averaged number of cycles for the middle quartile of measurements for performing the first operation of our protocol for 1,000,000 times. How to measure other steps in the protocol is documented within `dphi.c` and requires manually changing the code at designated positions.
+This performs (1) tests of the underlying cryptographic operations provided by Intel's library, (2) executes one complete handshake of our protocol and (3) gives the averaged number of cycles for the middle quartile of measurements for performing the respective operation of the protocol for 1,000,000 times.
 
 ## Remarks
 From a technical point of view, there is no need to copy any files into any other folder structure. However, our build script is not very sophisticated so that manually copying files appeared simpler.
