@@ -19,12 +19,12 @@ If you want to use our docker image, proceed as follows. Otherwise, for the manu
 ### Download and setup
 It is assumed that you have docker up and running:
 
-1. Download the docker image [file](https://cloud.esmt.org/s/iCJxbHNjrqxibFn)
+1. Download the docker image [file](https://www.dropbox.com/s/w8gb2d532c2pi45/ubuntu_dphi.7z?dl=0)
 2. Unzip the archive `7za x ubuntu_dphi.7z`
 3. Load the image into your list of available docker images with 
 `docker load < ubuntu_dphi.tar`
 4. Create and run container through `docker run -it ubuntu_dphi`
-5. Go to subfolde where build script is located `cd /root/dPHI/isa-l_crypto/`
+5. Go to subfolder where build script is located `cd /root/dPHI/isa-l_crypto/`
 6. Compile dPHI through `./dphi.sh`
 7. Run tests with `aes/dphi`
 
